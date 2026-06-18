@@ -42,24 +42,99 @@ type Store struct {
 func New(db *dynamodb.Client) *Store {
 	return &Store{db: db}
 }
-
-// PutCard writes a card to DynamoDB.
-func (s *Store) PutCard(ctx context.Context, card Card) error {
-	item, err := attributevalue.MarshalMap(map[string]any{
+func (s *Store) RemoveCard(ctx context.Context, card Card) error {
+	key, err := attributevalue.MarshalMap(map[string]any{
 		"name":       card.Name,
 		"set_number": card.sk(),
-		"set":        card.Set,
-		"number":     card.Number,
-		"count":      card.Count,
-		"image_url":  card.ImageURL,
+	})
+	if err != nil {
+		return err
+	}
+	delta, err := attributevalue.Marshal(-card.Count)
+	if err != nil {
+		return err
+	}
+	out, err := s.db.UpdateItem(ctx, &dynamodb.UpdateItemInput{
+		TableName:    aws.String(TableName),
+		Key:          key,
+		ReturnValues: types.ReturnValueUpdatedNew,
+		UpdateExpression: aws.String(
+			"ADD #count :delta",
+		),
+		ExpressionAttributeNames: map[string]string{
+			"#count": "count",
+		},
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":delta": delta,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	var output int
+	if err := attributevalue.Unmarshal(out.Attributes["count"], &output); err != nil {
+		return err
+	}
+	if output <= 0 {
+		_, err := s.db.DeleteItem(ctx, &dynamodb.DeleteItemInput{
+			TableName: aws.String(TableName),
+			Key:       key,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// PutCard writes a card to DynamoDB. If the card already exists, the count
+// is atomically incremented rather than overwritten.
+func (s *Store) PutCard(ctx context.Context, card Card) error {
+	key, err := attributevalue.MarshalMap(map[string]any{
+		"name":       card.Name,
+		"set_number": card.sk(),
 	})
 	if err != nil {
 		return err
 	}
 
-	_, err = s.db.PutItem(ctx, &dynamodb.PutItemInput{
+	delta, err := attributevalue.Marshal(card.Count)
+	if err != nil {
+		return err
+	}
+
+	imageURL, err := attributevalue.Marshal(card.ImageURL)
+	if err != nil {
+		return err
+	}
+
+	set, err := attributevalue.Marshal(card.Set)
+	if err != nil {
+		return err
+	}
+
+	number, err := attributevalue.Marshal(card.Number)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName: aws.String(TableName),
-		Item:      item,
+		Key:       key,
+		UpdateExpression: aws.String(
+			"ADD #count :delta SET #set = if_not_exists(#set, :set), #number = if_not_exists(#number, :number), image_url = if_not_exists(image_url, :image_url)",
+		),
+		ExpressionAttributeNames: map[string]string{
+			"#count":  "count",
+			"#set":    "set",
+			"#number": "number",
+		},
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":delta":     delta,
+			":set":       set,
+			":number":    number,
+			":image_url": imageURL,
+		},
 	})
 	return err
 }
