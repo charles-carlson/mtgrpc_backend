@@ -39,6 +39,7 @@ var (
 	errGetCardsByName        = status.Errorf(codes.Internal, "Unable to retrieve cards by name")
 	errGetCardsByNameInvalid = status.Errorf(codes.InvalidArgument, "Invalid name argument")
 	errGetCardsBySet         = status.Errorf(codes.Internal, "Unable to retrieve cards by set")
+	errGetCardsBySetInvalid  = status.Errorf(codes.InvalidArgument, "Invalid set argument")
 	errQueryCardsInvalid     = status.Errorf(codes.InvalidArgument, "Invalid arguments given to retrieve cards")
 	errQueryCardsInternal    = status.Errorf(codes.Internal, "Unable to query cards")
 	errListCards             = status.Errorf(codes.Internal, "Unable to fetch collection")
@@ -82,11 +83,26 @@ func (s *Server) GetCardsByName(ctx context.Context, req *pb.GetCardsByNameReque
 }
 
 func (s *Server) GetCardsBySet(ctx context.Context, req *pb.GetCardsBySetRequest) (*pb.GetCardsBySetResponse, error) {
-	return nil, nil
+	if req.Set == "" {
+		return nil, errGetCardsBySetInvalid
+	}
+
+	results, err := s.cards.GetCardsBySet(ctx, req.Set)
+	if err != nil {
+		return nil, errGetCardsBySet
+	}
+
+	return &pb.GetCardsBySetResponse{Cards: toProtoCards(results)}, nil
+
 }
 
 func (s *Server) SearchCards(ctx context.Context, req *pb.SearchCardsRequest) (*pb.SearchCardsResponse, error) {
-	return nil, nil
+	results, err := s.cards.SearchCards(ctx, req.Name, req.Set, req.Colors)
+	if err != nil {
+		return nil, errQueryCardsInternal
+	}
+
+	return &pb.SearchCardsResponse{Cards: toProtoCards(results)}, nil
 }
 
 func (s *Server) ListCards(ctx context.Context, req *pb.ListCardsRequest) (*pb.ListCardsResponse, error) {

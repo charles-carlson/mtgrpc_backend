@@ -3,12 +3,21 @@ package store
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
+
+// SearchFilter holds optional fields for SearchCards.
+// Only non-empty fields are applied as filter conditions.
+type SearchFilter struct {
+	Name   string
+	Set    string
+	Colors []string
+}
 
 const TableName = "cards"
 
@@ -110,11 +119,75 @@ func (s *Store) QueryByName(ctx context.Context, name string) ([]Card, error) {
 	}
 	return cards, nil
 }
+
 // ScanAll returns every card in the collection.
 func (s *Store) ScanAll(ctx context.Context) ([]Card, error) {
 	out, err := s.db.Scan(ctx, &dynamodb.ScanInput{
 		TableName: aws.String(TableName),
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	var cards []Card
+	if err := attributevalue.UnmarshalListOfMaps(out.Items, &cards); err != nil {
+		return nil, err
+	}
+	return cards, nil
+}
+
+// Search scans the table applying only the non-empty fields in the filter.
+// If all fields are empty it falls back to a full scan.
+func (s *Store) Search(ctx context.Context, f SearchFilter) ([]Card, error) {
+	var (
+		conditions []string
+		attrNames  = map[string]string{}
+		attrValues = map[string]types.AttributeValue{}
+	)
+
+	if f.Name != "" {
+		v, err := attributevalue.Marshal(f.Name)
+		if err != nil {
+			return nil, err
+		}
+		conditions = append(conditions, "#n = :name")
+		attrNames["#n"] = "name"
+		attrValues[":name"] = v
+	}
+
+	if f.Set != "" {
+		v, err := attributevalue.Marshal(f.Set)
+		if err != nil {
+			return nil, err
+		}
+		conditions = append(conditions, "#s = :set")
+		attrNames["#s"] = "set"
+		attrValues[":set"] = v
+	}
+
+	for i, color := range f.Colors {
+		v, err := attributevalue.Marshal(color)
+		if err != nil {
+			return nil, err
+		}
+		placeholder := fmt.Sprintf(":color%d", i)
+		conditions = append(conditions, fmt.Sprintf("contains(colors, %s)", placeholder))
+		attrValues[placeholder] = v
+	}
+
+	input := &dynamodb.ScanInput{
+		TableName: aws.String(TableName),
+	}
+
+	if len(conditions) > 0 {
+		input.FilterExpression = aws.String(strings.Join(conditions, " AND "))
+		input.ExpressionAttributeValues = attrValues
+		if len(attrNames) > 0 {
+			input.ExpressionAttributeNames = attrNames
+		}
+	}
+
+	out, err := s.db.Scan(ctx, input)
 	if err != nil {
 		return nil, err
 	}

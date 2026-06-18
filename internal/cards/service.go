@@ -49,3 +49,12 @@ func (svc *Service) GetCardsBySet(ctx context.Context, set string) ([]store.Card
 func (svc *Service) ListCards(ctx context.Context) ([]store.Card, error) {
 	return svc.store.ScanAll(ctx)
 }
+
+// SearchCards queries the collection with optional name, set, and color filters.
+func (svc *Service) SearchCards(ctx context.Context, name, set string, colors []string) ([]store.Card, error) {
+	return svc.store.Search(ctx, store.SearchFilter{
+		Name:   name,
+		Set:    set,
+		Colors: colors,
+	})
+}
