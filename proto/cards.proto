@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package cards;
+
+option go_package = "backend_nonsense/pb";
+
+service MTGRPC {
+    rpc AddCard(AddCardRequest)             returns (AddCardResponse){}
+    rpc GetCard(GetCardRequest)             returns (GetCardResponse){}
+    rpc GetCardsByName(GetCardsByNameRequest) returns (GetCardsByNameResponse){}
+    rpc GetCardsBySet(GetCardsBySetRequest)  returns (GetCardsBySetResponse){}
+    rpc SearchCards(SearchCardsRequest)     returns (SearchCardsResponse){}
+    rpc ListCards(ListCardsRequest)         returns (ListCardsResponse){}
+}
+
+// Shared card message
+message Card {
+    string name      = 1;
+    string set       = 2;
+    string number    = 3;
+    int32  count     = 4;
+    string image_url = 5;
+}
+
+// AddCard
+message AddCardRequest {
+    string name   = 1;
+    string set    = 2;
+    string number = 3;
+    int32  count  = 4;
+}
+
+message AddCardResponse {
+    Card card = 1;
+}
+
+// GetCard — exact lookup by name + set + number
+message GetCardRequest {
+    string name   = 1;
+    string set    = 2;
+    string number = 3;
+}
+
+message GetCardResponse {
+    Card card = 1;
+}
+
+// GetCardsByName — all printings of a card across sets
+message GetCardsByNameRequest {
+    string name = 1;
+}
+
+message GetCardsByNameResponse {
+    repeated Card cards = 1;
+}
+
+// GetCardsBySet — all cards in a given set
+message GetCardsBySetRequest {
+    string set = 1;
+}
+
+message GetCardsBySetResponse {
+    repeated Card cards = 1;
+}
+
+// SearchCards — flexible filter, all fields optional
+message SearchCardsRequest {
+    string          name   = 1;
+    string          set    = 2;
+    repeated string colors = 3; // e.g. ["W", "U", "B", "R", "G"]
+}
+
+message SearchCardsResponse {
+    repeated Card cards = 1;
+}
+
+// ListCards — full collection with optional pagination
+message ListCardsRequest {
+    int32  page_size  = 1;
+    string page_token = 2;
+}
+
+message ListCardsResponse {
+    repeated Card cards          = 1;
+    string        next_page_token = 2;
+}
