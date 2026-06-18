@@ -110,6 +110,22 @@ func (s *Store) QueryByName(ctx context.Context, name string) ([]Card, error) {
 	}
 	return cards, nil
 }
+// ScanAll returns every card in the collection.
+func (s *Store) ScanAll(ctx context.Context) ([]Card, error) {
+	out, err := s.db.Scan(ctx, &dynamodb.ScanInput{
+		TableName: aws.String(TableName),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var cards []Card
+	if err := attributevalue.UnmarshalListOfMaps(out.Items, &cards); err != nil {
+		return nil, err
+	}
+	return cards, nil
+}
+
 // QueryBySet returns all cards in a given set using a Scan with filter.
 // set is not a key attribute so a Query is not possible without a GSI.
 func (s *Store) QueryBySet(ctx context.Context, set string) ([]Card, error) {

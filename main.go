@@ -50,7 +50,7 @@ func main() {
 	}
 
 	srv := grpc.NewServer()
-	pb.RegisterMTGRPCServer(srv, server.New(cardSvc, s))
+	pb.RegisterMTGRPCServer(srv, server.New(cardSvc))
 
 	log.Printf("gRPC server listening on %s", addr)
 	if err := srv.Serve(lis); err != nil {

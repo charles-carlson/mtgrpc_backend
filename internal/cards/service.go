@@ -29,3 +29,23 @@ func (svc *Service) AddCard(ctx context.Context, card store.Card) error {
 
 	return svc.store.PutCard(ctx, card)
 }
+
+// GetCard returns a specific card by name, set, and number.
+func (svc *Service) GetCard(ctx context.Context, name, set, number string) (*store.Card, error) {
+	return svc.store.GetCard(ctx, name, set, number)
+}
+
+// GetCardsByName returns all printings of a card across sets.
+func (svc *Service) GetCardsByName(ctx context.Context, name string) ([]store.Card, error) {
+	return svc.store.QueryByName(ctx, name)
+}
+
+// GetCardsBySet returns all cards in a given set.
+func (svc *Service) GetCardsBySet(ctx context.Context, set string) ([]store.Card, error) {
+	return svc.store.QueryBySet(ctx, set)
+}
+
+// ListCards returns all cards in the collection.
+func (svc *Service) ListCards(ctx context.Context) ([]store.Card, error) {
+	return svc.store.ScanAll(ctx)
+}
