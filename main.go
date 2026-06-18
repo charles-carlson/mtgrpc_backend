@@ -13,7 +13,9 @@ import (
 	"backend_nonsense/internal/cards"
 	"backend_nonsense/internal/ingest"
 	"backend_nonsense/internal/scryfall"
+	"backend_nonsense/internal/server"
 	"backend_nonsense/internal/store"
+	"backend_nonsense/pb"
 )
 
 const addr = ":50051"
@@ -48,9 +50,7 @@ func main() {
 	}
 
 	srv := grpc.NewServer()
-
-	// TODO: register your services here, passing cardSvc for manual entry
-	// pb.RegisterYourServiceServer(srv, &yourServiceImpl{cards: cardSvc, store: s})
+	pb.RegisterMTGRPCServer(srv, server.New(cardSvc, s))
 
 	log.Printf("gRPC server listening on %s", addr)
 	if err := srv.Serve(lis); err != nil {

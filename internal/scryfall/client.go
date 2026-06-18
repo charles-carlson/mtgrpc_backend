@@ -9,18 +9,25 @@ import (
 	"time"
 )
 
-const baseURL = "https://api.scryfall.com"
+var baseURL = "https://api.scryfall.com"
 
 // Client is a minimal Scryfall API client.
 type Client struct {
 	http    *http.Client
-	limiter <-chan time.Time
+	limiter <-chan struct{}
 }
 
 func New() *Client {
+	ch := make(chan struct{})
+	go func() {
+		t := time.NewTicker(100 * time.Millisecond)
+		for range t.C {
+			ch <- struct{}{}
+		}
+	}()
 	return &Client{
 		http:    &http.Client{Timeout: 10 * time.Second},
-		limiter: time.Tick(100 * time.Millisecond), // stay well under 10 req/s
+		limiter: ch,
 	}
 }
 
@@ -40,7 +47,7 @@ type imageURIs struct {
 func (c *Client) GetImageURL(ctx context.Context, set, number string) (string, error) {
 	<-c.limiter
 
-	url := fmt.Sprintf("%s/cards/%s/%s", baseURL, strings.ToLower(set), number)
+	url := fmt.Sprintf("%s/cards/%s/%s", baseURL, strings.ToLower(set), number) //nolint:gocritic
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return "", err

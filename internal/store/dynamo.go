@@ -110,3 +110,31 @@ func (s *Store) QueryByName(ctx context.Context, name string) ([]Card, error) {
 	}
 	return cards, nil
 }
+// QueryBySet returns all cards in a given set using a Scan with filter.
+// set is not a key attribute so a Query is not possible without a GSI.
+func (s *Store) QueryBySet(ctx context.Context, set string) ([]Card, error) {
+	setKey, err := attributevalue.Marshal(set)
+	if err != nil {
+		return nil, err
+	}
+
+	out, err := s.db.Scan(ctx, &dynamodb.ScanInput{
+		TableName:        aws.String(TableName),
+		FilterExpression: aws.String("#s = :set"),
+		ExpressionAttributeNames: map[string]string{
+			"#s": "set",
+		},
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":set": setKey,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var cards []Card
+	if err := attributevalue.UnmarshalListOfMaps(out.Items, &cards); err != nil {
+		return nil, err
+	}
+	return cards, nil
+}
