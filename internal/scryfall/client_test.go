@@ -27,38 +27,50 @@ func alwaysReady() <-chan struct{} {
 	return ch
 }
 
-func TestGetImageURL_Normal(t *testing.T) {
+func TestGetCardInfo_Normal(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]any{
 			"image_uris": map[string]string{
 				"normal": "https://example.com/card.jpg",
+			},
+			"prices": map[string]string{
+				"usd": "0.15",
+				"eur": "0.10",
 			},
 		})
 	}))
 	defer srv.Close()
 
 	c := newTestClient(srv)
-	// override baseURL for test
 	origBase := baseURL
 	baseURL = srv.URL
 	defer func() { baseURL = origBase }()
 
-	url, err := c.GetImageURL(context.Background(), "M10", "149")
+	info, err := c.GetCardInfo(context.Background(), "M10", "149")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if url != "https://example.com/card.jpg" {
-		t.Errorf("got %q, want %q", url, "https://example.com/card.jpg")
+	if info.ImageURL != "https://example.com/card.jpg" {
+		t.Errorf("got image %q, want %q", info.ImageURL, "https://example.com/card.jpg")
+	}
+	if info.Prices.USD != "0.15" {
+		t.Errorf("got usd %q, want %q", info.Prices.USD, "0.15")
+	}
+	if info.Prices.EUR != "0.10" {
+		t.Errorf("got eur %q, want %q", info.Prices.EUR, "0.10")
 	}
 }
 
-func TestGetImageURL_DoubleFaced(t *testing.T) {
+func TestGetCardInfo_DoubleFaced(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]any{
 			"card_faces": []map[string]any{
 				{"image_uris": map[string]string{"normal": "https://example.com/front.jpg"}},
 				{"image_uris": map[string]string{"normal": "https://example.com/back.jpg"}},
 			},
+			"prices": map[string]string{
+				"usd": "5.00",
+			},
 		})
 	}))
 	defer srv.Close()
@@ -68,16 +80,16 @@ func TestGetImageURL_DoubleFaced(t *testing.T) {
 	baseURL = srv.URL
 	defer func() { baseURL = origBase }()
 
-	url, err := c.GetImageURL(context.Background(), "MID", "98")
+	info, err := c.GetCardInfo(context.Background(), "MID", "98")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if url != "https://example.com/front.jpg" {
-		t.Errorf("got %q, want front face URL", url)
+	if info.ImageURL != "https://example.com/front.jpg" {
+		t.Errorf("got %q, want front face URL", info.ImageURL)
 	}
 }
 
-func TestGetImageURL_NotFound(t *testing.T) {
+func TestGetCardInfo_NotFound(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}))
@@ -88,7 +100,7 @@ func TestGetImageURL_NotFound(t *testing.T) {
 	baseURL = srv.URL
 	defer func() { baseURL = origBase }()
 
-	_, err := c.GetImageURL(context.Background(), "BAD", "999")
+	_, err := c.GetCardInfo(context.Background(), "BAD", "999")
 	if err == nil {
 		t.Fatal("expected error for 404, got nil")
 	}

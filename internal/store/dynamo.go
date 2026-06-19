@@ -21,6 +21,15 @@ type SearchFilter struct {
 
 const TableName = "cards"
 
+// Prices holds Scryfall market prices. All values are strings (e.g. "0.15") or empty if unavailable.
+type Prices struct {
+	USD     string `json:"usd"      dynamodbav:"usd"`
+	USDFoil string `json:"usd_foil" dynamodbav:"usd_foil"`
+	EUR     string `json:"eur"      dynamodbav:"eur"`
+	EURFoil string `json:"eur_foil" dynamodbav:"eur_foil"`
+	TIX     string `json:"tix"      dynamodbav:"tix"`
+}
+
 // Card mirrors the Manabox export shape.
 // PK = Name, SK = Set#Number
 type Card struct {
@@ -29,6 +38,7 @@ type Card struct {
 	Number   string `json:"number"    dynamodbav:"number"`
 	Count    int    `json:"count"     dynamodbav:"count"`
 	ImageURL string `json:"image_url" dynamodbav:"image_url"`
+	Prices   Prices `json:"prices"    dynamodbav:"prices"`
 }
 
 func (c Card) sk() string {
@@ -118,11 +128,16 @@ func (s *Store) PutCard(ctx context.Context, card Card) error {
 		return err
 	}
 
+	prices, err := attributevalue.Marshal(card.Prices)
+	if err != nil {
+		return err
+	}
+
 	_, err = s.db.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName: aws.String(TableName),
 		Key:       key,
 		UpdateExpression: aws.String(
-			"ADD #count :delta SET #set = if_not_exists(#set, :set), #number = if_not_exists(#number, :number), image_url = if_not_exists(image_url, :image_url)",
+			"ADD #count :delta SET #set = if_not_exists(#set, :set), #number = if_not_exists(#number, :number), image_url = if_not_exists(image_url, :image_url), prices = :prices",
 		),
 		ExpressionAttributeNames: map[string]string{
 			"#count":  "count",
@@ -134,6 +149,7 @@ func (s *Store) PutCard(ctx context.Context, card Card) error {
 			":set":       set,
 			":number":    number,
 			":image_url": imageURL,
+			":prices":    prices,
 		},
 	})
 	return err
