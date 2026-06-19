@@ -106,5 +106,9 @@ func (s *Server) SearchCards(ctx context.Context, req *pb.SearchCardsRequest) (*
 }
 
 func (s *Server) ListCards(ctx context.Context, req *pb.ListCardsRequest) (*pb.ListCardsResponse, error) {
-	return nil, nil
+	results, err := s.cards.ListCards(ctx)
+	if err != nil {
+		return nil, errListCards
+	}
+	return &pb.ListCardsResponse{Cards: toProtoCards(results)}, nil
 }

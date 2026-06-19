@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"google.golang.org/grpc"
@@ -22,7 +23,15 @@ const addr = ":50051"
 
 func main() {
 	ingestPath := flag.String("ingest", "", "path to Manabox JSON export to ingest (optional)")
+	local := flag.Bool("local", false, "use local DynamoDB at localhost:8000")
+
 	flag.Parse()
+	var dbOpts []func(o *dynamodb.Options)
+	if *local {
+		dbOpts = append(dbOpts, func(o *dynamodb.Options) {
+			o.BaseEndpoint = aws.String("http://localhost:8000")
+		})
+	}
 
 	ctx := context.Background()
 
@@ -31,7 +40,7 @@ func main() {
 		log.Fatalf("load aws config: %v", err)
 	}
 
-	db := dynamodb.NewFromConfig(cfg)
+	db := dynamodb.NewFromConfig(cfg, dbOpts...)
 	s := store.New(db)
 	sc := scryfall.New()
 	cardSvc := cards.NewService(s, sc)
