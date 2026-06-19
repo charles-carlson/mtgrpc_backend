@@ -29,6 +29,9 @@ func (svc *Service) AddCard(ctx context.Context, card store.Card) error {
 
 	return svc.store.PutCard(ctx, card)
 }
+func (svc *Service) RemoveCard(ctx context.Context, card store.Card) error {
+	return svc.store.RemoveCard(ctx, card)
+}
 
 // GetCard returns a specific card by name, set, and number.
 func (svc *Service) GetCard(ctx context.Context, name, set, number string) (*store.Card, error) {

@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 
 	"backend_nonsense/internal/cards"
+	"backend_nonsense/internal/eject"
 	"backend_nonsense/internal/ingest"
 	"backend_nonsense/internal/scryfall"
 	"backend_nonsense/internal/server"
@@ -23,6 +24,7 @@ const addr = ":50051"
 
 func main() {
 	ingestPath := flag.String("ingest", "", "path to Manabox JSON export to ingest (optional)")
+	ejectPath := flag.String("eject", "", "path to file to eject cards from store (optional)")
 	local := flag.Bool("local", false, "use local DynamoDB at localhost:8000")
 
 	flag.Parse()
@@ -52,7 +54,13 @@ func main() {
 		}
 		log.Println("ingest complete")
 	}
-
+	if *ejectPath != "" {
+		log.Printf("ejecting from %s", *ejectPath)
+		if err := eject.RunFile(ctx, *ejectPath, cardSvc); err != nil {
+			log.Fatalf("eject: %v", err)
+		}
+		log.Println("ejection completed")
+	}
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalf("listen: %v", err)
