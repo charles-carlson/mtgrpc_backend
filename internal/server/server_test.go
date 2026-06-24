@@ -43,7 +43,56 @@ func (s *stubCardService) SearchCards(_ context.Context, _, _ string, _ []string
 func (s *stubCardService) ListCards(_ context.Context) ([]store.Card, error) {
 	return s.listCards, s.listErr
 }
+func TestGetCard_Success(t *testing.T) {
+	srv := New(&stubCardService{
+		getCard: &store.Card{
+			Name: "Sol Ring", Set: "C21", Number: "263", Count: 2,
+			Prices: store.Prices{USD: "0.50"},
+		},
+	})
 
+	resp, err := srv.GetCard(context.Background(), &pb.GetCardRequest{
+		Name: "Sol Ring", Set: "C21", Number: "263",
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if resp.Card.Name != "Sol Ring" {
+		t.Errorf("got name %q, want %q", resp.Card.Name, "Sol Ring")
+	}
+	if resp.Card.Count != 2 {
+		t.Errorf("got count %d, want 2", resp.Card.Count)
+	}
+	if resp.Card.Prices.Usd != "0.50" {
+		t.Errorf("got usd %q, want %q", resp.Card.Prices.Usd, "0.50")
+	}
+}
+
+func TestGetCard_InvalidRequest(t *testing.T) {
+	srv := New(&stubCardService{})
+
+	_, err := srv.GetCard(context.Background(), &pb.GetCardRequest{})
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if status.Code(err) != codes.InvalidArgument {
+		t.Errorf("got code %v, want %v", status.Code(err), codes.InvalidArgument)
+	}
+}
+
+func TestGetCard_InternalRequest(t *testing.T) {
+	srv := New(&stubCardService{getErr: errors.New("dynamo down")})
+
+	_, err := srv.GetCard(context.Background(), &pb.GetCardRequest{
+		Name: "Sol Ring", Set: "C21", Number: "263",
+	})
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if status.Code(err) != codes.Internal {
+		t.Errorf("got code %v, want %v", status.Code(err), codes.Internal)
+	}
+}
 func TestAddCard_Success(t *testing.T) {
 	stored := &store.Card{
 		Name:   "Sol Ring",
