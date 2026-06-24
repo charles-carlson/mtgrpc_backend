@@ -14,9 +14,15 @@ import (
 
 // stubCardService implements cardService for testing.
 type stubCardService struct {
-	addErr  error
-	getCard *store.Card
-	getErr  error
+	addErr         error
+	getCard        *store.Card
+	getCardsByName []store.Card
+	getCardsBySet  []store.Card
+	searchCards    []store.Card
+	listCards      []store.Card
+	getErr         error
+	searchErr      error
+	listErr        error
 }
 
 func (s *stubCardService) AddCard(_ context.Context, _ store.Card) error {
@@ -26,16 +32,16 @@ func (s *stubCardService) GetCard(_ context.Context, _, _, _ string) (*store.Car
 	return s.getCard, s.getErr
 }
 func (s *stubCardService) GetCardsByName(_ context.Context, _ string) ([]store.Card, error) {
-	return nil, nil
+	return s.getCardsByName, s.getErr
 }
 func (s *stubCardService) GetCardsBySet(_ context.Context, _ string) ([]store.Card, error) {
-	return nil, nil
+	return s.getCardsBySet, s.getErr
 }
 func (s *stubCardService) SearchCards(_ context.Context, _, _ string, _ []string) ([]store.Card, error) {
-	return nil, nil
+	return s.searchCards, s.searchErr
 }
 func (s *stubCardService) ListCards(_ context.Context) ([]store.Card, error) {
-	return nil, nil
+	return s.listCards, s.listErr
 }
 
 func TestAddCard_Success(t *testing.T) {
