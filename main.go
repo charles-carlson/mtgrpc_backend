@@ -5,11 +5,7 @@ import (
 	"flag"
 	"log"
 	"net"
-
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	"google.golang.org/grpc"
+	"time"
 
 	"backend_nonsense/internal/cards"
 	"backend_nonsense/internal/eject"
@@ -18,6 +14,14 @@ import (
 	"backend_nonsense/internal/server"
 	"backend_nonsense/internal/store"
 	"backend_nonsense/pb"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"golang.org/x/time/rate"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const addr = ":50051"
@@ -65,8 +69,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("listen: %v", err)
 	}
-
-	srv := grpc.NewServer()
+	limiter := rate.NewLimiter(rate.Every(time.Second), 10)
+	interceptor := func(ctx context.Context, req any, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+		if !limiter.Allow() {
+			return nil, status.Errorf(codes.ResourceExhausted, "rate limit exceeded on service")
+		}
+		return handler(ctx, req)
+	}
+	srv := grpc.NewServer(grpc.UnaryInterceptor(interceptor))
 	pb.RegisterMTGRPCServer(srv, server.New(cardSvc))
 
 	log.Printf("gRPC server listening on %s", addr)
