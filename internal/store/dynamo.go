@@ -2,6 +2,8 @@ package store
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -212,7 +214,7 @@ func (s *Store) QueryByName(ctx context.Context, name string) ([]Card, error) {
 }
 
 // ScanAll returns every card in the collection.
-func (s *Store) ScanAll(ctx context.Context) ([]Card, error) {
+func (s *Store) ScanAll(ctx context.Context, pageSize int32, pageToken string) ([]Card, string, error) {
 	out, err := s.db.Scan(ctx, &dynamodb.ScanInput{
 		TableName: aws.String(TableName),
 	})
@@ -229,7 +231,7 @@ func (s *Store) ScanAll(ctx context.Context) ([]Card, error) {
 
 // Search scans the table applying only the non-empty fields in the filter.
 // If all fields are empty it falls back to a full scan.
-func (s *Store) Search(ctx context.Context, f SearchFilter) ([]Card, error) {
+func (s *Store) Search(ctx context.Context, f SearchFilter, pageSize int32, pageToken string) ([]Card, string, error) {
 	var (
 		conditions []string
 		attrNames  = map[string]string{}
@@ -292,13 +294,17 @@ func (s *Store) Search(ctx context.Context, f SearchFilter) ([]Card, error) {
 
 // QueryBySet returns all cards in a given set using a Scan with filter.
 // set is not a key attribute so a Query is not possible without a GSI.
-func (s *Store) QueryBySet(ctx context.Context, set string) ([]Card, error) {
-	setKey, err := attributevalue.Marshal(set)
+func (s *Store) QueryBySet(ctx context.Context, set string, pageSize int32, pageToken string) ([]Card, string, error) {
+	startKey, err := decodePageToken(pageToken)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
-	out, err := s.db.Scan(ctx, &dynamodb.ScanInput{
+	setKey, err := attributevalue.Marshal(set)
+	if err != nil {
+		return nil, "", err
+	}
+	input := &dynamodb.ScanInput{
 		TableName:        aws.String(TableName),
 		FilterExpression: aws.String("#s = :set"),
 		ExpressionAttributeNames: map[string]string{
@@ -307,14 +313,49 @@ func (s *Store) QueryBySet(ctx context.Context, set string) ([]Card, error) {
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":set": setKey,
 		},
-	})
+	}
+	if pageSize > 0 {
+		input.Limit = aws.Int32(pageSize)
+	}
+	if startKey != nil {
+		input.ExclusiveStartKey = startKey
+	}
+	out, err := s.db.Scan(ctx, input)
+	if err != nil {
+		return nil, "", err
+	}
+	nextToken, err := encodePageToken(out.LastEvaluatedKey)
+	if err != nil {
+		return nil, "", err
+	}
+	var cards []Card
+	if err := attributevalue.UnmarshalListOfMaps(out.Items, &cards); err != nil {
+		return nil, "", err
+	}
+	return cards, nextToken, nil
+}
+
+func encodePageToken(key map[string]types.AttributeValue) (string, error) {
+	if key == nil {
+		return "", nil
+	}
+	b, err := json.Marshal(key)
+	if err != nil {
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(b), nil
+}
+func decodePageToken(token string) (map[string]types.AttributeValue, error) {
+	if token == "" {
+		return nil, nil
+	}
+	b, err := base64.StdEncoding.DecodeString(token)
 	if err != nil {
 		return nil, err
 	}
-
-	var cards []Card
-	if err := attributevalue.UnmarshalListOfMaps(out.Items, &cards); err != nil {
+	var key map[string]types.AttributeValue
+	if err := json.Unmarshal(b, &key); err != nil {
 		return nil, err
 	}
-	return cards, nil
+	return key, nil
 }
