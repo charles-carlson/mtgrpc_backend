@@ -22,10 +22,30 @@ resource "aws_iam_role_policy" "dynamodb_access" {
       Action = [
         "dynamodb:GetItem",
         "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
         "dynamodb:Query",
         "dynamodb:Scan",
       ]
-      Resource = aws_dynamodb_table.cards.arn
+      Resource = var.dynamodb_table_arn
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "ecr_pull" {
+  name = "mtg-grpc-ecr-pull"
+  role = aws_iam_role.ec2_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "ecr:GetAuthorizationToken",
+        "ecr:BatchGetImage",
+        "ecr:GetDownloadUrlForLayer",
+      ]
+      Resource = "*"
     }]
   })
 }

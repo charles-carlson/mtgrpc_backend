@@ -17,6 +17,7 @@ data "aws_ami" "al2023_arm" {
 resource "aws_security_group" "grpc_server" {
   name        = "mtg-grpc-sg"
   description = "Allow gRPC and SSH"
+  vpc_id      = var.vpc_id
 
   ingress {
     description = "SSH"
@@ -40,16 +41,41 @@ resource "aws_security_group" "grpc_server" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    Name        = "mtg-grpc-sg"
+    Environment = var.environment
+  }
 }
 
 resource "aws_instance" "grpc_server" {
   ami                    = data.aws_ami.al2023_arm.id
   instance_type          = var.instance_type
   key_name               = var.ssh_key_name
+  subnet_id              = var.subnet_id
   vpc_security_group_ids = [aws_security_group.grpc_server.id]
-  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
+  iam_instance_profile   = var.iam_instance_profile
+
+  user_data = <<-EOF
+    #!/bin/bash
+    dnf update -y
+    dnf install -y docker
+    systemctl start docker
+    systemctl enable docker
+
+    ECR_REGISTRY=$(echo "${var.ecr_image_url}" | cut -d'/' -f1)
+    aws ecr get-login-password --region ${var.aws_region} | \
+      docker login --username AWS --password-stdin $ECR_REGISTRY
+
+    docker pull ${var.ecr_image_url}
+    docker run -d --restart=always \
+      -p 50051:50051 \
+      --name mtg-grpc-server \
+      ${var.ecr_image_url}
+  EOF
 
   tags = {
-    Name = "mtg-grpc-server"
+    Name        = "mtg-grpc-server"
+    Environment = var.environment
   }
 }

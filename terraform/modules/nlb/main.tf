@@ -1,0 +1,42 @@
+resource "aws_lb" "nlb" {
+  name               = "${var.app_name}-nlb-${var.environment}"
+  internal           = false
+  load_balancer_type = "network"
+  subnets            = var.subnet_ids
+  tags = {
+    Name        = "${var.app_name}-nlb"
+    Environment = var.environment
+  }
+}
+
+resource "aws_lb_target_group" "mtggrpc" {
+  name        = "${var.app_name}-tg-${var.environment}"
+  port        = 50051
+  protocol    = "TCP"
+  vpc_id      = var.vpc_id
+  target_type = "ip"
+
+  health_check {
+    protocol            = "TCP"
+    port                = 50051
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    interval            = 30
+  }
+
+  tags = {
+    Name        = "${var.app_name}-tg"
+    Environment = var.environment
+  }
+}
+
+resource "aws_lb_listener" "mtggrpc" {
+  load_balancer_arn = aws_lb.nlb.arn
+  port              = 50051
+  protocol          = "TCP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.mtggrpc.arn
+  }
+}
