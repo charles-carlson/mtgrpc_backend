@@ -215,18 +215,32 @@ func (s *Store) QueryByName(ctx context.Context, name string) ([]Card, error) {
 
 // ScanAll returns every card in the collection.
 func (s *Store) ScanAll(ctx context.Context, pageSize int32, pageToken string) ([]Card, string, error) {
-	out, err := s.db.Scan(ctx, &dynamodb.ScanInput{
-		TableName: aws.String(TableName),
-	})
+	startKey, err := decodePageToken(pageToken)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
-
+	input := &dynamodb.ScanInput{
+		TableName: aws.String(TableName),
+	}
+	if pageSize > 0 {
+		input.Limit = aws.Int32(pageSize)
+	}
+	if startKey != nil {
+		input.ExclusiveStartKey = startKey
+	}
+	out, err := s.db.Scan(ctx, input)
+	if err != nil {
+		return nil, "", err
+	}
+	nextToken, err := encodePageToken(out.LastEvaluatedKey)
+	if err != nil {
+		return nil, "", err
+	}
 	var cards []Card
 	if err := attributevalue.UnmarshalListOfMaps(out.Items, &cards); err != nil {
-		return nil, err
+		return nil, "", err
 	}
-	return cards, nil
+	return cards, nextToken, nil
 }
 
 // Search scans the table applying only the non-empty fields in the filter.
@@ -237,11 +251,14 @@ func (s *Store) Search(ctx context.Context, f SearchFilter, pageSize int32, page
 		attrNames  = map[string]string{}
 		attrValues = map[string]types.AttributeValue{}
 	)
-
+	startKey, err := decodePageToken(pageToken)
+	if err != nil {
+		return nil, "", err
+	}
 	if f.Name != "" {
 		v, err := attributevalue.Marshal(f.Name)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 		conditions = append(conditions, "#n = :name")
 		attrNames["#n"] = "name"
@@ -251,7 +268,7 @@ func (s *Store) Search(ctx context.Context, f SearchFilter, pageSize int32, page
 	if f.Set != "" {
 		v, err := attributevalue.Marshal(f.Set)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 		conditions = append(conditions, "#s = :set")
 		attrNames["#s"] = "set"
@@ -261,7 +278,7 @@ func (s *Store) Search(ctx context.Context, f SearchFilter, pageSize int32, page
 	for i, color := range f.Colors {
 		v, err := attributevalue.Marshal(color)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 		placeholder := fmt.Sprintf(":color%d", i)
 		conditions = append(conditions, fmt.Sprintf("contains(colors, %s)", placeholder))
@@ -279,17 +296,25 @@ func (s *Store) Search(ctx context.Context, f SearchFilter, pageSize int32, page
 			input.ExpressionAttributeNames = attrNames
 		}
 	}
-
+	if pageSize > 0 {
+		input.Limit = aws.Int32(pageSize)
+	}
+	if startKey != nil {
+		input.ExclusiveStartKey = startKey
+	}
 	out, err := s.db.Scan(ctx, input)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
-
+	nextToken, err := encodePageToken(out.LastEvaluatedKey)
+	if err != nil {
+		return nil, "", err
+	}
 	var cards []Card
 	if err := attributevalue.UnmarshalListOfMaps(out.Items, &cards); err != nil {
-		return nil, err
+		return nil, "", err
 	}
-	return cards, nil
+	return cards, nextToken, nil
 }
 
 // QueryBySet returns all cards in a given set using a Scan with filter.
