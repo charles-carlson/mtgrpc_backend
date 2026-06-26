@@ -34,14 +34,14 @@ func (s *stubCardService) GetCard(_ context.Context, _, _, _ string) (*store.Car
 func (s *stubCardService) GetCardsByName(_ context.Context, _ string) ([]store.Card, error) {
 	return s.getCardsByName, s.getErr
 }
-func (s *stubCardService) GetCardsBySet(_ context.Context, _ string) ([]store.Card, error) {
-	return s.getCardsBySet, s.getErr
+func (s *stubCardService) GetCardsBySet(_ context.Context, _ string, _ int32, _ string) ([]store.Card, string, error) {
+	return s.getCardsBySet, "", s.getErr
 }
-func (s *stubCardService) SearchCards(_ context.Context, _, _ string, _ []string) ([]store.Card, error) {
-	return s.searchCards, s.searchErr
+func (s *stubCardService) SearchCards(_ context.Context, _, _ string, _ []string, _ int32, _ string) ([]store.Card, string, error) {
+	return s.searchCards, "", s.searchErr
 }
-func (s *stubCardService) ListCards(_ context.Context) ([]store.Card, error) {
-	return s.listCards, s.listErr
+func (s *stubCardService) ListCards(_ context.Context, _ int32, _ string) ([]store.Card, string, error) {
+	return s.listCards, "", s.listErr
 }
 func TestGetCard_Success(t *testing.T) {
 	srv := New(&stubCardService{
@@ -124,8 +124,8 @@ func TestAddCard_InvalidRequest(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
-	if status.Code(err) != codes.Internal {
-		t.Errorf("got code %v, want %v", status.Code(err), codes.Internal)
+	if status.Code(err) != codes.InvalidArgument {
+		t.Errorf("got code %v, want %v", status.Code(err), codes.InvalidArgument)
 	}
 }
 
