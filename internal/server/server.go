@@ -39,9 +39,9 @@ type cardService interface {
 	AddCard(ctx context.Context, card store.Card) error
 	GetCard(ctx context.Context, name, set, number string) (*store.Card, error)
 	GetCardsByName(ctx context.Context, name string) ([]store.Card, error)
-	GetCardsBySet(ctx context.Context, set string) ([]store.Card, error)
-	SearchCards(ctx context.Context, name, set string, colors []string) ([]store.Card, error)
-	ListCards(ctx context.Context) ([]store.Card, error)
+	GetCardsBySet(ctx context.Context, set string, pageSize int32, pageToken string) ([]store.Card, string, error)
+	SearchCards(ctx context.Context, name, set string, colors []string, pageSize int32, pageToken string) ([]store.Card, string, error)
+	ListCards(ctx context.Context, pageSize int32, pageToken string) ([]store.Card, string, error)
 }
 
 type Server struct {
@@ -115,28 +115,27 @@ func (s *Server) GetCardsBySet(ctx context.Context, req *pb.GetCardsBySetRequest
 		return nil, errGetCardsBySetInvalid
 	}
 
-	results, err := s.cards.GetCardsBySet(ctx, req.Set)
+	results, nextToken, err := s.cards.GetCardsBySet(ctx, req.Set, req.PageSize, req.PageToken)
 	if err != nil {
 		return nil, errGetCardsBySet
 	}
 
-	return &pb.GetCardsBySetResponse{Cards: toProtoCards(results)}, nil
-
+	return &pb.GetCardsBySetResponse{Cards: toProtoCards(results), NextPageToken: nextToken}, nil
 }
 
 func (s *Server) SearchCards(ctx context.Context, req *pb.SearchCardsRequest) (*pb.SearchCardsResponse, error) {
-	results, err := s.cards.SearchCards(ctx, req.Name, req.Set, req.Colors)
+	results, nextToken, err := s.cards.SearchCards(ctx, req.Name, req.Set, req.Colors, req.PageSize, req.PageToken)
 	if err != nil {
 		return nil, errQueryCardsInternal
 	}
 
-	return &pb.SearchCardsResponse{Cards: toProtoCards(results)}, nil
+	return &pb.SearchCardsResponse{Cards: toProtoCards(results), NextPageToken: nextToken}, nil
 }
 
 func (s *Server) ListCards(ctx context.Context, req *pb.ListCardsRequest) (*pb.ListCardsResponse, error) {
-	results, err := s.cards.ListCards(ctx)
+	results, nextToken, err := s.cards.ListCards(ctx, req.PageSize, req.PageToken)
 	if err != nil {
 		return nil, errListCards
 	}
-	return &pb.ListCardsResponse{Cards: toProtoCards(results)}, nil
+	return &pb.ListCardsResponse{Cards: toProtoCards(results), NextPageToken: nextToken}, nil
 }

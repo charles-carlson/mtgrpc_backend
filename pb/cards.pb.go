@@ -494,6 +494,8 @@ func (x *GetCardsByNameResponse) GetCards() []*Card {
 type GetCardsBySetRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Set           string                 `protobuf:"bytes,1,opt,name=set,proto3" json:"set,omitempty"`
+	PageSize      int32                  `protobuf:"varint,2,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken     string                 `protobuf:"bytes,3,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -535,9 +537,24 @@ func (x *GetCardsBySetRequest) GetSet() string {
 	return ""
 }
 
+func (x *GetCardsBySetRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *GetCardsBySetRequest) GetPageToken() string {
+	if x != nil {
+		return x.PageToken
+	}
+	return ""
+}
+
 type GetCardsBySetResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Cards         []*Card                `protobuf:"bytes,1,rep,name=cards,proto3" json:"cards,omitempty"`
+	NextPageToken string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -579,12 +596,21 @@ func (x *GetCardsBySetResponse) GetCards() []*Card {
 	return nil
 }
 
+func (x *GetCardsBySetResponse) GetNextPageToken() string {
+	if x != nil {
+		return x.NextPageToken
+	}
+	return ""
+}
+
 // SearchCards — flexible filter, all fields optional
 type SearchCardsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Set           string                 `protobuf:"bytes,2,opt,name=set,proto3" json:"set,omitempty"`
 	Colors        []string               `protobuf:"bytes,3,rep,name=colors,proto3" json:"colors,omitempty"` // e.g. ["W", "U", "B", "R", "G"]
+	PageSize      int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
+	PageToken     string                 `protobuf:"bytes,5,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -640,9 +666,24 @@ func (x *SearchCardsRequest) GetColors() []string {
 	return nil
 }
 
+func (x *SearchCardsRequest) GetPageSize() int32 {
+	if x != nil {
+		return x.PageSize
+	}
+	return 0
+}
+
+func (x *SearchCardsRequest) GetPageToken() string {
+	if x != nil {
+		return x.PageToken
+	}
+	return ""
+}
+
 type SearchCardsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Cards         []*Card                `protobuf:"bytes,1,rep,name=cards,proto3" json:"cards,omitempty"`
+	NextPageToken string                 `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -682,6 +723,13 @@ func (x *SearchCardsResponse) GetCards() []*Card {
 		return x.Cards
 	}
 	return nil
+}
+
+func (x *SearchCardsResponse) GetNextPageToken() string {
+	if x != nil {
+		return x.NextPageToken
+	}
+	return ""
 }
 
 // ListCards — full collection with optional pagination
@@ -823,17 +871,25 @@ const file_proto_cards_proto_rawDesc = "" +
 	"\x15GetCardsByNameRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\";\n" +
 	"\x16GetCardsByNameResponse\x12!\n" +
-	"\x05cards\x18\x01 \x03(\v2\v.cards.CardR\x05cards\"(\n" +
+	"\x05cards\x18\x01 \x03(\v2\v.cards.CardR\x05cards\"d\n" +
 	"\x14GetCardsBySetRequest\x12\x10\n" +
-	"\x03set\x18\x01 \x01(\tR\x03set\":\n" +
+	"\x03set\x18\x01 \x01(\tR\x03set\x12\x1b\n" +
+	"\tpage_size\x18\x02 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\n" +
+	"page_token\x18\x03 \x01(\tR\tpageToken\"b\n" +
 	"\x15GetCardsBySetResponse\x12!\n" +
-	"\x05cards\x18\x01 \x03(\v2\v.cards.CardR\x05cards\"R\n" +
+	"\x05cards\x18\x01 \x03(\v2\v.cards.CardR\x05cards\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\x8e\x01\n" +
 	"\x12SearchCardsRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x10\n" +
 	"\x03set\x18\x02 \x01(\tR\x03set\x12\x16\n" +
-	"\x06colors\x18\x03 \x03(\tR\x06colors\"8\n" +
+	"\x06colors\x18\x03 \x03(\tR\x06colors\x12\x1b\n" +
+	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\x12\x1d\n" +
+	"\n" +
+	"page_token\x18\x05 \x01(\tR\tpageToken\"`\n" +
 	"\x13SearchCardsResponse\x12!\n" +
-	"\x05cards\x18\x01 \x03(\v2\v.cards.CardR\x05cards\"N\n" +
+	"\x05cards\x18\x01 \x03(\v2\v.cards.CardR\x05cards\x12&\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"N\n" +
 	"\x10ListCardsRequest\x12\x1b\n" +
 	"\tpage_size\x18\x01 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +

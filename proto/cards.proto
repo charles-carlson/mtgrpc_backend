@@ -65,22 +65,28 @@ message GetCardsByNameResponse {
 
 // GetCardsBySet — all cards in a given set
 message GetCardsBySetRequest {
-    string set = 1;
+    string set        = 1;
+    int32  page_size  = 2;
+    string page_token = 3;
 }
 
 message GetCardsBySetResponse {
-    repeated Card cards = 1;
+    repeated Card cards          = 1;
+    string        next_page_token = 2;
 }
 
 // SearchCards — flexible filter, all fields optional
 message SearchCardsRequest {
-    string          name   = 1;
-    string          set    = 2;
-    repeated string colors = 3; // e.g. ["W", "U", "B", "R", "G"]
+    string          name       = 1;
+    string          set        = 2;
+    repeated string colors     = 3; // e.g. ["W", "U", "B", "R", "G"]
+    int32           page_size  = 4;
+    string          page_token = 5;
 }
 
 message SearchCardsResponse {
-    repeated Card cards = 1;
+    repeated Card cards          = 1;
+    string        next_page_token = 2;
 }
 
 // ListCards — full collection with optional pagination
