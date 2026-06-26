@@ -18,6 +18,33 @@ func NewService(s *store.Store, sc *scryfall.Client) *Service {
 	return &Service{store: s, scryfall: sc}
 }
 
+// Refreshing prices for DynamoDb
+func (svc *Service) RefreshPrices(ctx context.Context) error {
+	cards, err := svc.store.ScanAllCards(ctx)
+	if err != nil {
+		return err
+	}
+	for _, card := range cards {
+		info, err := svc.scryfall.GetCardInfo(ctx, card.Set, card.Number)
+		if err != nil {
+			log.Printf("warn: scryfall data for %q (%s/%s): %v", card.Name, card.Set, card.Number, err)
+		} else {
+			card.Prices = store.Prices{
+				USD:     info.Prices.USD,
+				USDFoil: info.Prices.USDFoil,
+				EUR:     info.Prices.EUR,
+				EURFoil: info.Prices.EURFoil,
+				TIX:     info.Prices.TIX,
+			}
+			err := svc.store.UpdatePrices(ctx, card)
+			if err != nil {
+				log.Printf("warn: update pricing data for %q (%s/%s): %v", card.Name, card.Set, card.Number, err)
+			}
+		}
+	}
+	return nil
+}
+
 // AddCard fetches Scryfall data (image URL + prices) and writes the card to DynamoDB.
 func (svc *Service) AddCard(ctx context.Context, card store.Card) error {
 	info, err := svc.scryfall.GetCardInfo(ctx, card.Set, card.Number)

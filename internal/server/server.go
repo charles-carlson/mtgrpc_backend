@@ -58,7 +58,7 @@ var (
 	errQueryCardsInvalid     = status.Errorf(codes.InvalidArgument, "Invalid arguments given to retrieve cards")
 	errQueryCardsInternal    = status.Errorf(codes.Internal, "Unable to query cards")
 	errListCards             = status.Errorf(codes.Internal, "Unable to fetch collection")
-	errAddCardInvalid        = status.Errorf(codes.Internal, "Invalid Add Card requirements")
+	errAddCardInvalid        = status.Errorf(codes.InvalidArgument, "Invalid Add Card requirements")
 	errAddCardInternal       = status.Errorf(codes.Internal, "Unable to add card to store")
 )
 

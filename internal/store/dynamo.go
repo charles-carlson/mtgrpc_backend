@@ -359,7 +359,51 @@ func (s *Store) QueryBySet(ctx context.Context, set string, pageSize int32, page
 	}
 	return cards, nextToken, nil
 }
-
+func (s *Store) ScanAllCards(ctx context.Context) ([]Card, error) {
+	var all []Card
+	var startKey map[string]types.AttributeValue
+	for {
+		out, err := s.db.Scan(ctx, &dynamodb.ScanInput{
+			TableName:         aws.String(TableName),
+			ExclusiveStartKey: startKey,
+		})
+		if err != nil {
+			return nil, err
+		}
+		var page []Card
+		if err := attributevalue.UnmarshalListOfMaps(out.Items, &page); err != nil {
+			return nil, err
+		}
+		all = append(all, page...)
+		if out.LastEvaluatedKey == nil {
+			break
+		}
+		startKey = out.LastEvaluatedKey
+	}
+	return all, nil
+}
+func (s *Store) UpdatePrices(ctx context.Context, card Card) error {
+	key, err := attributevalue.MarshalMap(map[string]any{
+		"name":       card.Name,
+		"set_number": card.sk(),
+	})
+	if err != nil {
+		return err
+	}
+	prices, err := attributevalue.Marshal(card.Prices)
+	if err != nil {
+		return err
+	}
+	_, err = s.db.UpdateItem(ctx, &dynamodb.UpdateItemInput{
+		TableName:        aws.String(TableName),
+		Key:              key,
+		UpdateExpression: aws.String("SET prices = :prices"),
+		ExpressionAttributeValues: map[string]types.AttributeValue{
+			":prices": prices,
+		},
+	})
+	return err
+}
 func encodePageToken(key map[string]types.AttributeValue) (string, error) {
 	if key == nil {
 		return "", nil

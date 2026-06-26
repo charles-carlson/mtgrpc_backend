@@ -5,6 +5,9 @@ import (
 	"flag"
 	"log"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"backend_nonsense/internal/cards"
@@ -21,6 +24,8 @@ import (
 	"golang.org/x/time/rate"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/health"
+	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/status"
 )
 
@@ -29,6 +34,7 @@ const addr = ":50051"
 func main() {
 	ingestPath := flag.String("ingest", "", "path to Manabox JSON export to ingest (optional)")
 	ejectPath := flag.String("eject", "", "path to file to eject cards from store (optional)")
+	refresh := flag.Bool("refresh", false, "refresh prices for all cards from Scryfall")
 	local := flag.Bool("local", false, "use local DynamoDB at localhost:8000")
 
 	flag.Parse()
@@ -65,6 +71,13 @@ func main() {
 		}
 		log.Println("ejection completed")
 	}
+	if *refresh {
+		log.Println("refreshing prices...")
+		if err := cardSvc.RefreshPrices(ctx); err != nil {
+			log.Fatalf("refresh: %v", err)
+		}
+		log.Println("prices refreshed")
+	}
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatalf("listen: %v", err)
@@ -77,10 +90,24 @@ func main() {
 		return handler(ctx, req)
 	}
 	srv := grpc.NewServer(grpc.UnaryInterceptor(interceptor))
+	healthSrv := health.NewServer()
+	grpc_health_v1.RegisterHealthServer(srv, healthSrv)
+	healthSrv.SetServingStatus("cards.MTGRPC", grpc_health_v1.HealthCheckResponse_SERVING)
 	pb.RegisterMTGRPCServer(srv, server.New(cardSvc))
 
-	log.Printf("gRPC server listening on %s", addr)
-	if err := srv.Serve(lis); err != nil {
-		log.Fatalf("serve: %v", err)
-	}
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+
+	go func() {
+		log.Printf("gRPC server listening on %s", addr)
+		if err := srv.Serve(lis); err != nil {
+			log.Fatalf("serve: %v", err)
+		}
+	}()
+
+	<-quit
+	log.Println("shutting down...")
+	healthSrv.SetServingStatus("cards.MTGRPC", grpc_health_v1.HealthCheckResponse_NOT_SERVING)
+	srv.GracefulStop()
+	log.Println("stopped")
 }
