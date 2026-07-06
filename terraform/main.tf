@@ -49,6 +49,7 @@ module "iam" {
   source             = "./modules/iam"
   dynamodb_table_arn = module.dynamodb.user_table_arn
   ecr_repository_arn = module.ecr.repository_arn
+  log_group_arn      = module.logging.log_group_arn
 }
 
 module "nlb" {

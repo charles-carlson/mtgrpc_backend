@@ -60,6 +60,27 @@ resource "aws_instance" "grpc_server" {
     #!/bin/bash
     dnf update -y
     dnf install -y docker
+    dnf install -y amazon-cloudwatch-agent
+
+      cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json << 'CWCONFIG'
+      {
+        "logs": {
+          "logs_collected": {
+            "files": {
+              "collect_list": [{
+                "file_path": "/var/lib/docker/containers/*/*.log",
+                "log_group_name": "/ec2/mtg-grpc",
+                "log_stream_name": "{instance_id}",
+                "timestamp_format": "%Y-%m-%dT%H:%M:%S"
+              }]
+            }
+          }
+        }
+      }
+      CWCONFIG
+
+    systemctl start amazon-cloudwatch-agent
+    systemctl enable amazon-cloudwatch-agent
     systemctl start docker
     systemctl enable docker
 
