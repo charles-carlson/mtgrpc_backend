@@ -32,7 +32,7 @@ resource "aws_security_group" "grpc_server" {
     from_port   = 50051
     to_port     = 50051
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.allowed_ssh_cidr]
   }
 
   egress {
