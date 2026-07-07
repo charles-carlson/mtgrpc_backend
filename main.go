@@ -83,13 +83,19 @@ func main() {
 		log.Fatalf("listen: %v", err)
 	}
 	limiter := rate.NewLimiter(rate.Every(time.Second), 10)
+	logger := func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
+		start := time.Now()
+		resp, err := handler(ctx, req)
+		log.Printf("method=%s duration=%s code=%s", info.FullMethod, time.Since(start), status.Code(err))
+		return resp, err
+	}
 	interceptor := func(ctx context.Context, req any, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		if !limiter.Allow() {
 			return nil, status.Errorf(codes.ResourceExhausted, "rate limit exceeded on service")
 		}
 		return handler(ctx, req)
 	}
-	srv := grpc.NewServer(grpc.UnaryInterceptor(interceptor))
+	srv := grpc.NewServer(grpc.ChainUnaryInterceptor(logger, interceptor))
 	healthSrv := health.NewServer()
 	grpc_health_v1.RegisterHealthServer(srv, healthSrv)
 	healthSrv.SetServingStatus("cards.MTGRPC", grpc_health_v1.HealthCheckResponse_SERVING)
