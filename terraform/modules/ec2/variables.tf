@@ -12,7 +12,6 @@ variable "ssh_key_name" {
 variable "allowed_ssh_cidr" {
   type        = string
   description = "CIDR block allowed to SSH into the instance"
-  default     = "0.0.0.0/0"
 }
 
 variable "environment" {

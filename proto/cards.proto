@@ -29,6 +29,7 @@ message Card {
     int32  count     = 4;
     string image_url = 5;
     Prices prices  = 6;
+    repeated string colors = 7;
 }
 
 // AddCard

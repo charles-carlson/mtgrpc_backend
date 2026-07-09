@@ -52,6 +52,7 @@ func (svc *Service) AddCard(ctx context.Context, card store.Card) error {
 		log.Printf("warn: scryfall data for %q (%s/%s): %v", card.Name, card.Set, card.Number, err)
 	} else {
 		card.ImageURL = info.ImageURL
+		card.Colors = info.Colors
 		card.Prices = store.Prices{
 			USD:     info.Prices.USD,
 			USDFoil: info.Prices.USDFoil,

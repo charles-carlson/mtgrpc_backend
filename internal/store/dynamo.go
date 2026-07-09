@@ -35,12 +35,13 @@ type Prices struct {
 // Card mirrors the Manabox export shape.
 // PK = Name, SK = Set#Number
 type Card struct {
-	Name     string `json:"name"      dynamodbav:"name"`
-	Set      string `json:"set"       dynamodbav:"set"`
-	Number   string `json:"number"    dynamodbav:"number"`
-	Count    int    `json:"count"     dynamodbav:"count"`
-	ImageURL string `json:"image_url" dynamodbav:"image_url"`
-	Prices   Prices `json:"prices"    dynamodbav:"prices"`
+	Name     string   `json:"name"      dynamodbav:"name"`
+	Set      string   `json:"set"       dynamodbav:"set"`
+	Number   string   `json:"number"    dynamodbav:"number"`
+	Count    int      `json:"count"     dynamodbav:"count"`
+	ImageURL string   `json:"image_url" dynamodbav:"image_url"`
+	Prices   Prices   `json:"prices"    dynamodbav:"prices"`
+	Colors   []string `json:"colors"    dynamodbav:"colors"`
 }
 
 func (c Card) sk() string {
@@ -285,8 +286,9 @@ func (s *Store) Search(ctx context.Context, f SearchFilter, pageSize int32, page
 		attrValues[placeholder] = v
 	}
 
-	input := &dynamodb.ScanInput{
+	input := &dynamodb.QueryInput{
 		TableName: aws.String(TableName),
+		IndexName: aws.String("set-index"),
 	}
 
 	if len(conditions) > 0 {
@@ -302,7 +304,7 @@ func (s *Store) Search(ctx context.Context, f SearchFilter, pageSize int32, page
 	if startKey != nil {
 		input.ExclusiveStartKey = startKey
 	}
-	out, err := s.db.Scan(ctx, input)
+	out, err := s.db.Query(ctx, input)
 	if err != nil {
 		return nil, "", err
 	}
@@ -329,8 +331,9 @@ func (s *Store) QueryBySet(ctx context.Context, set string, pageSize int32, page
 	if err != nil {
 		return nil, "", err
 	}
-	input := &dynamodb.ScanInput{
+	input := &dynamodb.QueryInput{
 		TableName:        aws.String(TableName),
+		IndexName:        aws.String("set-index"),
 		FilterExpression: aws.String("#s = :set"),
 		ExpressionAttributeNames: map[string]string{
 			"#s": "set",
@@ -345,7 +348,7 @@ func (s *Store) QueryBySet(ctx context.Context, set string, pageSize int32, page
 	if startKey != nil {
 		input.ExclusiveStartKey = startKey
 	}
-	out, err := s.db.Scan(ctx, input)
+	out, err := s.db.Query(ctx, input)
 	if err != nil {
 		return nil, "", err
 	}

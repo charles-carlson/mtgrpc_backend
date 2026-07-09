@@ -107,6 +107,7 @@ type Card struct {
 	Count         int32                  `protobuf:"varint,4,opt,name=count,proto3" json:"count,omitempty"`
 	ImageUrl      string                 `protobuf:"bytes,5,opt,name=image_url,json=imageUrl,proto3" json:"image_url,omitempty"`
 	Prices        *Prices                `protobuf:"bytes,6,opt,name=prices,proto3" json:"prices,omitempty"`
+	Colors        []string               `protobuf:"bytes,7,rep,name=colors,proto3" json:"colors,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -179,6 +180,13 @@ func (x *Card) GetImageUrl() string {
 func (x *Card) GetPrices() *Prices {
 	if x != nil {
 		return x.Prices
+	}
+	return nil
+}
+
+func (x *Card) GetColors() []string {
+	if x != nil {
+		return x.Colors
 	}
 	return nil
 }
@@ -847,14 +855,15 @@ const file_proto_cards_proto_rawDesc = "" +
 	"\busd_foil\x18\x02 \x01(\tR\ausdFoil\x12\x10\n" +
 	"\x03eur\x18\x03 \x01(\tR\x03eur\x12\x19\n" +
 	"\beur_foil\x18\x04 \x01(\tR\aeurFoil\x12\x10\n" +
-	"\x03tix\x18\x05 \x01(\tR\x03tix\"\x9e\x01\n" +
+	"\x03tix\x18\x05 \x01(\tR\x03tix\"\xb6\x01\n" +
 	"\x04Card\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x10\n" +
 	"\x03set\x18\x02 \x01(\tR\x03set\x12\x16\n" +
 	"\x06number\x18\x03 \x01(\tR\x06number\x12\x14\n" +
 	"\x05count\x18\x04 \x01(\x05R\x05count\x12\x1b\n" +
 	"\timage_url\x18\x05 \x01(\tR\bimageUrl\x12%\n" +
-	"\x06prices\x18\x06 \x01(\v2\r.cards.PricesR\x06prices\"d\n" +
+	"\x06prices\x18\x06 \x01(\v2\r.cards.PricesR\x06prices\x12\x16\n" +
+	"\x06colors\x18\a \x03(\tR\x06colors\"d\n" +
 	"\x0eAddCardRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x10\n" +
 	"\x03set\x18\x02 \x01(\tR\x03set\x12\x16\n" +
