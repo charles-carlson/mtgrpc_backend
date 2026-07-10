@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"log"
-	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -16,22 +17,21 @@ import (
 	"backend_nonsense/internal/scryfall"
 	"backend_nonsense/internal/server"
 	"backend_nonsense/internal/store"
-	"backend_nonsense/pb"
+	"backend_nonsense/pb/pbconnect"
 
+	"connectrpc.com/connect"
+	"connectrpc.com/grpchealth"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 	"golang.org/x/time/rate"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/health"
-	"google.golang.org/grpc/health/grpc_health_v1"
-	"google.golang.org/grpc/status"
 )
 
-const addr = ":50051"
-
 func main() {
+	// different --addr when running with --local.
+	addr := flag.String("addr", ":7200", "address for the Connect/gRPC/gRPC-Web server")
 	ingestPath := flag.String("ingest", "", "path to Manabox JSON export to ingest (optional)")
 	ejectPath := flag.String("eject", "", "path to file to eject cards from store (optional)")
 	refresh := flag.Bool("refresh", false, "refresh prices for all cards from Scryfall")
@@ -78,42 +78,56 @@ func main() {
 		}
 		log.Println("prices refreshed")
 	}
-	lis, err := net.Listen("tcp", addr)
-	if err != nil {
-		log.Fatalf("listen: %v", err)
-	}
 	limiter := rate.NewLimiter(rate.Every(time.Second), 10)
-	logger := func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		start := time.Now()
-		resp, err := handler(ctx, req)
-		log.Printf("method=%s duration=%s code=%s", info.FullMethod, time.Since(start), status.Code(err))
-		return resp, err
-	}
-	interceptor := func(ctx context.Context, req any, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		if !limiter.Allow() {
-			return nil, status.Errorf(codes.ResourceExhausted, "rate limit exceeded on service")
+	logging := connect.UnaryInterceptorFunc(func(next connect.UnaryFunc) connect.UnaryFunc {
+		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
+			start := time.Now()
+			resp, err := next(ctx, req)
+			code := "ok"
+			if err != nil {
+				code = connect.CodeOf(err).String()
+			}
+			log.Printf("method=%s duration=%s code=%s", req.Spec().Procedure, time.Since(start), code)
+			return resp, err
 		}
-		return handler(ctx, req)
+	})
+	rateLimit := connect.UnaryInterceptorFunc(func(next connect.UnaryFunc) connect.UnaryFunc {
+		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
+			if !limiter.Allow() {
+				return nil, connect.NewError(connect.CodeResourceExhausted, errors.New("rate limit exceeded on service"))
+			}
+			return next(ctx, req)
+		}
+	})
+
+	adapter := server.NewConnectAdapter(server.New(cardSvc))
+	mux := http.NewServeMux()
+	mux.Handle(pbconnect.NewMTGRPCHandler(adapter, connect.WithInterceptors(logging, rateLimit)))
+	mux.Handle(grpchealth.NewHandler(grpchealth.NewStaticChecker("cards.MTGRPC")))
+
+	// h2c serves HTTP/2 without TLS so existing gRPC clients keep working,
+	// while browsers reach Connect / gRPC-Web over HTTP/1.1 on the same port.
+	httpSrv := &http.Server{
+		Addr:    *addr,
+		Handler: h2c.NewHandler(mux, &http2.Server{}),
 	}
-	srv := grpc.NewServer(grpc.ChainUnaryInterceptor(logger, interceptor))
-	healthSrv := health.NewServer()
-	grpc_health_v1.RegisterHealthServer(srv, healthSrv)
-	healthSrv.SetServingStatus("cards.MTGRPC", grpc_health_v1.HealthCheckResponse_SERVING)
-	pb.RegisterMTGRPCServer(srv, server.New(cardSvc))
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 
 	go func() {
-		log.Printf("gRPC server listening on %s", addr)
-		if err := srv.Serve(lis); err != nil {
+		log.Printf("server listening on %s (Connect + gRPC + gRPC-Web)", *addr)
+		if err := httpSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("serve: %v", err)
 		}
 	}()
 
 	<-quit
 	log.Println("shutting down...")
-	healthSrv.SetServingStatus("cards.MTGRPC", grpc_health_v1.HealthCheckResponse_NOT_SERVING)
-	srv.GracefulStop()
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := httpSrv.Shutdown(shutdownCtx); err != nil {
+		log.Printf("graceful shutdown failed: %v", err)
+	}
 	log.Println("stopped")
 }
