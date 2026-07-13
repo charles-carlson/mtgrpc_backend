@@ -24,6 +24,8 @@ func toProtoCard(c store.Card) *pb.Card {
 			EurFoil: c.Prices.EURFoil,
 			Tix:     c.Prices.TIX,
 		},
+		Colors: c.Colors,
+		Rarity: c.Rarity,
 	}
 }
 
@@ -40,7 +42,7 @@ type cardService interface {
 	GetCard(ctx context.Context, name, set, number string) (*store.Card, error)
 	GetCardsByName(ctx context.Context, name string) ([]store.Card, error)
 	GetCardsBySet(ctx context.Context, set string, pageSize int32, pageToken string) ([]store.Card, string, error)
-	SearchCards(ctx context.Context, name, set string, colors []string, pageSize int32, pageToken string) ([]store.Card, string, error)
+	SearchCards(ctx context.Context, name, set string, colors []string, rarity []string, pageSize int32, pageToken string) ([]store.Card, string, error)
 	ListCards(ctx context.Context, pageSize int32, pageToken string) ([]store.Card, string, error)
 }
 
@@ -124,7 +126,7 @@ func (s *Server) GetCardsBySet(ctx context.Context, req *pb.GetCardsBySetRequest
 }
 
 func (s *Server) SearchCards(ctx context.Context, req *pb.SearchCardsRequest) (*pb.SearchCardsResponse, error) {
-	results, nextToken, err := s.cards.SearchCards(ctx, req.Name, req.Set, req.Colors, req.PageSize, req.PageToken)
+	results, nextToken, err := s.cards.SearchCards(ctx, req.Name, req.Set, req.Colors, req.Rarity, req.PageSize, req.PageToken)
 	if err != nil {
 		return nil, errQueryCardsInternal
 	}

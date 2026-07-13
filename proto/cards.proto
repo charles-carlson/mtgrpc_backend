@@ -30,6 +30,7 @@ message Card {
     string image_url = 5;
     Prices prices  = 6;
     repeated string colors = 7;
+    string rarity = 8;
 }
 
 // AddCard
@@ -83,6 +84,7 @@ message SearchCardsRequest {
     repeated string colors     = 3; // e.g. ["W", "U", "B", "R", "G"]
     int32           page_size  = 4;
     string          page_token = 5;
+    repeated string rarity     = 6;
 }
 
 message SearchCardsResponse {

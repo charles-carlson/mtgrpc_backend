@@ -19,6 +19,7 @@ type SearchFilter struct {
 	Name   string
 	Set    string
 	Colors []string
+	Rarity []string
 }
 
 const TableName = "cards"
@@ -42,6 +43,7 @@ type Card struct {
 	ImageURL string   `json:"image_url" dynamodbav:"image_url"`
 	Prices   Prices   `json:"prices"    dynamodbav:"prices"`
 	Colors   []string `json:"colors"    dynamodbav:"colors"`
+	Rarity   string   `json:"rarity"    dynamodbav:"rarity"`
 }
 
 func (c Card) sk() string {
@@ -136,11 +138,21 @@ func (s *Store) PutCard(ctx context.Context, card Card) error {
 		return err
 	}
 
+	colors, err := attributevalue.Marshal(card.Colors)
+	if err != nil {
+		return err
+	}
+
+	rarity, err := attributevalue.Marshal(card.Rarity)
+	if err != nil {
+		return err
+	}
+
 	_, err = s.db.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName: aws.String(TableName),
 		Key:       key,
 		UpdateExpression: aws.String(
-			"ADD #count :delta SET #set = if_not_exists(#set, :set), #number = if_not_exists(#number, :number), image_url = if_not_exists(image_url, :image_url), prices = :prices",
+			"ADD #count :delta SET #set = if_not_exists(#set, :set), #number = if_not_exists(#number, :number), image_url = if_not_exists(image_url, :image_url), prices = :prices, colors = :colors, rarity = :rarity",
 		),
 		ExpressionAttributeNames: map[string]string{
 			"#count":  "count",
@@ -153,6 +165,8 @@ func (s *Store) PutCard(ctx context.Context, card Card) error {
 			":number":    number,
 			":image_url": imageURL,
 			":prices":    prices,
+			":colors":    colors,
+			":rarity":    rarity,
 		},
 	})
 	return err
@@ -247,76 +261,89 @@ func (s *Store) ScanAll(ctx context.Context, pageSize int32, pageToken string) (
 // Search scans the table applying only the non-empty fields in the filter.
 // If all fields are empty it falls back to a full scan.
 func (s *Store) Search(ctx context.Context, f SearchFilter, pageSize int32, pageToken string) ([]Card, string, error) {
-	var (
-		conditions []string
-		attrNames  = map[string]string{}
-		attrValues = map[string]types.AttributeValue{}
-	)
 	startKey, err := decodePageToken(pageToken)
 	if err != nil {
 		return nil, "", err
 	}
-	if f.Name != "" {
-		v, err := attributevalue.Marshal(f.Name)
-		if err != nil {
-			return nil, "", err
-		}
-		conditions = append(conditions, "#n = :name")
-		attrNames["#n"] = "name"
-		attrValues[":name"] = v
-	}
-
 	if f.Set != "" {
 		v, err := attributevalue.Marshal(f.Set)
 		if err != nil {
 			return nil, "", err
 		}
-		conditions = append(conditions, "#s = :set")
-		attrNames["#s"] = "set"
-		attrValues[":set"] = v
-	}
-
-	for i, color := range f.Colors {
-		v, err := attributevalue.Marshal(color)
+		filter, names, values, err := buildSearchExpression(f)
 		if err != nil {
 			return nil, "", err
 		}
-		placeholder := fmt.Sprintf(":color%d", i)
-		conditions = append(conditions, fmt.Sprintf("contains(colors, %s)", placeholder))
-		attrValues[placeholder] = v
-	}
-
-	input := &dynamodb.QueryInput{
-		TableName: aws.String(TableName),
-		IndexName: aws.String("set-index"),
-	}
-
-	if len(conditions) > 0 {
-		input.FilterExpression = aws.String(strings.Join(conditions, " AND "))
-		input.ExpressionAttributeValues = attrValues
-		if len(attrNames) > 0 {
-			input.ExpressionAttributeNames = attrNames
+		names["#s"] = "set"
+		values[":set"] = v
+		input := &dynamodb.QueryInput{
+			TableName:                 aws.String(TableName),
+			IndexName:                 aws.String("set-index"),
+			KeyConditionExpression:    aws.String("#s = :set"),
+			ExpressionAttributeNames:  names,
+			ExpressionAttributeValues: values,
 		}
+		if len(filter) > 0 {
+			input.FilterExpression = aws.String(filter)
+		}
+		if pageSize > 0 {
+			input.Limit = aws.Int32(pageSize)
+		}
+		if startKey != nil {
+			input.ExclusiveStartKey = startKey
+		}
+		out, err := s.db.Query(ctx, input)
+		if err != nil {
+			return nil, "", err
+		}
+		nextToken, err := encodePageToken(out.LastEvaluatedKey)
+		if err != nil {
+			return nil, "", err
+		}
+		var cards []Card
+		if err := attributevalue.UnmarshalListOfMaps(out.Items, &cards); err != nil {
+			return nil, "", err
+		}
+		return cards, nextToken, nil
+	} else {
+
+		filter, names, values, err := buildSearchExpression(f)
+		if err != nil {
+			return nil, "", err
+		}
+		input := &dynamodb.ScanInput{
+			TableName: aws.String(TableName),
+		}
+		if len(filter) > 0 {
+			input.FilterExpression = aws.String(filter)
+		}
+		if len(names) > 0 {
+			input.ExpressionAttributeNames = names
+		}
+		if len(values) > 0 {
+			input.ExpressionAttributeValues = values
+		}
+		if pageSize > 0 {
+			input.Limit = aws.Int32(pageSize)
+		}
+		if startKey != nil {
+			input.ExclusiveStartKey = startKey
+		}
+		out, err := s.db.Scan(ctx, input)
+		if err != nil {
+			return nil, "", err
+		}
+		nextToken, err := encodePageToken(out.LastEvaluatedKey)
+		if err != nil {
+			return nil, "", err
+		}
+		var cards []Card
+		if err := attributevalue.UnmarshalListOfMaps(out.Items, &cards); err != nil {
+			return nil, "", err
+		}
+		return cards, nextToken, nil
 	}
-	if pageSize > 0 {
-		input.Limit = aws.Int32(pageSize)
-	}
-	if startKey != nil {
-		input.ExclusiveStartKey = startKey
-	}
-	out, err := s.db.Query(ctx, input)
-	if err != nil {
-		return nil, "", err
-	}
-	nextToken, err := encodePageToken(out.LastEvaluatedKey)
-	if err != nil {
-		return nil, "", err
-	}
-	var cards []Card
-	if err := attributevalue.UnmarshalListOfMaps(out.Items, &cards); err != nil {
-		return nil, "", err
-	}
-	return cards, nextToken, nil
+
 }
 
 // QueryBySet returns all cards in a given set using a Scan with filter.
@@ -430,4 +457,56 @@ func decodePageToken(token string) (map[string]types.AttributeValue, error) {
 		return nil, err
 	}
 	return key, nil
+}
+
+func buildSearchExpression(f SearchFilter) (filter string, names map[string]string, values map[string]types.AttributeValue, err error) {
+	var (
+		conditions []string
+		attrNames  = map[string]string{}
+		attrValues = map[string]types.AttributeValue{}
+	)
+	if f.Name != "" {
+		v, err := attributevalue.Marshal(f.Name)
+		if err != nil {
+			return "", nil, nil, err
+		}
+		conditions = append(conditions, "contains(#n, :name)")
+		attrNames["#n"] = "name"
+		attrValues[":name"] = v
+	}
+	rarityClauses := []string{}
+
+	for i, rarity := range f.Rarity {
+		v, err := attributevalue.Marshal(rarity)
+		if err != nil {
+			return "", nil, nil, err
+		}
+		placeholder := fmt.Sprintf(":rarity%d", i)
+		cond := fmt.Sprintf("#r = %s", placeholder)
+		rarityClauses = append(rarityClauses, cond)
+
+		attrValues[placeholder] = v
+	}
+	if len(rarityClauses) > 0 {
+		attrNames["#r"] = "rarity"
+		conditions = append(conditions, "("+strings.Join(rarityClauses, " OR ")+")")
+	}
+
+	// colorClauses := []string{}  for each color → "contains(colors, :colorN)"
+	//   if len > 0 → conditions = append(conditions, "(" + join(colorClauses, " OR ") + ")")
+	colorClauses := []string{}
+	for i, color := range f.Colors {
+		v, err := attributevalue.Marshal(color)
+		if err != nil {
+			return "", nil, nil, err
+		}
+		placeholder := fmt.Sprintf(":color%d", i)
+		cond := fmt.Sprintf("contains(colors, %s)", placeholder)
+		colorClauses = append(colorClauses, cond)
+		attrValues[placeholder] = v
+	}
+	if len(colorClauses) > 0 {
+		conditions = append(conditions, "("+strings.Join(colorClauses, " OR ")+")")
+	}
+	return strings.Join(conditions, " AND "), attrNames, attrValues, nil
 }

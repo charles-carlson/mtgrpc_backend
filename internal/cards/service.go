@@ -53,6 +53,7 @@ func (svc *Service) AddCard(ctx context.Context, card store.Card) error {
 	} else {
 		card.ImageURL = info.ImageURL
 		card.Colors = info.Colors
+		card.Rarity = info.Rarity
 		card.Prices = store.Prices{
 			USD:     info.Prices.USD,
 			USDFoil: info.Prices.USDFoil,
@@ -89,10 +90,11 @@ func (svc *Service) ListCards(ctx context.Context, pageSize int32, pageToken str
 }
 
 // SearchCards queries the collection with optional name, set, and color filters.
-func (svc *Service) SearchCards(ctx context.Context, name, set string, colors []string, pageSize int32, pageToken string) ([]store.Card, string, error) {
+func (svc *Service) SearchCards(ctx context.Context, name, set string, colors []string, rarity []string, pageSize int32, pageToken string) ([]store.Card, string, error) {
 	return svc.store.Search(ctx, store.SearchFilter{
 		Name:   name,
 		Set:    set,
 		Colors: colors,
+		Rarity: rarity,
 	}, pageSize, pageToken)
 }

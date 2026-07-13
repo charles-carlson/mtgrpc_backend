@@ -9,6 +9,7 @@ aws dynamodb create-table \
       --attribute-definitions \
         AttributeName=name,AttributeType=S \
         AttributeName=set_number,AttributeType=S \
+        AttributeName=set,AttributeType=S \
       --global-secondary-indexes \
           "[{
             \"IndexName\": \"set-index\",

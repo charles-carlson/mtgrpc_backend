@@ -37,7 +37,7 @@ func (s *stubCardService) GetCardsByName(_ context.Context, _ string) ([]store.C
 func (s *stubCardService) GetCardsBySet(_ context.Context, _ string, _ int32, _ string) ([]store.Card, string, error) {
 	return s.getCardsBySet, "", s.getErr
 }
-func (s *stubCardService) SearchCards(_ context.Context, _, _ string, _ []string, _ int32, _ string) ([]store.Card, string, error) {
+func (s *stubCardService) SearchCards(_ context.Context, _, _ string, _ []string, _ []string, _ int32, _ string) ([]store.Card, string, error) {
 	return s.searchCards, "", s.searchErr
 }
 func (s *stubCardService) ListCards(_ context.Context, _ int32, _ string) ([]store.Card, string, error) {

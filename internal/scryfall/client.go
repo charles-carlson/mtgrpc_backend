@@ -45,6 +45,7 @@ type CardInfo struct {
 	ImageURL string
 	Prices   Prices
 	Colors   []string
+	Rarity   string
 }
 
 type cardResponse struct {
@@ -54,6 +55,7 @@ type cardResponse struct {
 	} `json:"card_faces"`
 	Prices Prices   `json:"prices"`
 	Colors []string `json:"colors"`
+	Rarity string   `json:"rarity"`
 }
 
 type imageURIs struct {
@@ -101,5 +103,6 @@ func (c *Client) GetCardInfo(ctx context.Context, set, number string) (*CardInfo
 		ImageURL: imageURL,
 		Prices:   card.Prices,
 		Colors:   card.Colors,
+		Rarity:   card.Rarity,
 	}, nil
 }

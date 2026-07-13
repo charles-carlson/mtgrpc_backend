@@ -108,6 +108,7 @@ type Card struct {
 	ImageUrl      string                 `protobuf:"bytes,5,opt,name=image_url,json=imageUrl,proto3" json:"image_url,omitempty"`
 	Prices        *Prices                `protobuf:"bytes,6,opt,name=prices,proto3" json:"prices,omitempty"`
 	Colors        []string               `protobuf:"bytes,7,rep,name=colors,proto3" json:"colors,omitempty"`
+	Rarity        string                 `protobuf:"bytes,8,opt,name=rarity,proto3" json:"rarity,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -189,6 +190,13 @@ func (x *Card) GetColors() []string {
 		return x.Colors
 	}
 	return nil
+}
+
+func (x *Card) GetRarity() string {
+	if x != nil {
+		return x.Rarity
+	}
+	return ""
 }
 
 // AddCard
@@ -619,6 +627,7 @@ type SearchCardsRequest struct {
 	Colors        []string               `protobuf:"bytes,3,rep,name=colors,proto3" json:"colors,omitempty"` // e.g. ["W", "U", "B", "R", "G"]
 	PageSize      int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	PageToken     string                 `protobuf:"bytes,5,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	Rarity        []string               `protobuf:"bytes,6,rep,name=rarity,proto3" json:"rarity,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -686,6 +695,13 @@ func (x *SearchCardsRequest) GetPageToken() string {
 		return x.PageToken
 	}
 	return ""
+}
+
+func (x *SearchCardsRequest) GetRarity() []string {
+	if x != nil {
+		return x.Rarity
+	}
+	return nil
 }
 
 type SearchCardsResponse struct {
@@ -855,7 +871,7 @@ const file_proto_cards_proto_rawDesc = "" +
 	"\busd_foil\x18\x02 \x01(\tR\ausdFoil\x12\x10\n" +
 	"\x03eur\x18\x03 \x01(\tR\x03eur\x12\x19\n" +
 	"\beur_foil\x18\x04 \x01(\tR\aeurFoil\x12\x10\n" +
-	"\x03tix\x18\x05 \x01(\tR\x03tix\"\xb6\x01\n" +
+	"\x03tix\x18\x05 \x01(\tR\x03tix\"\xce\x01\n" +
 	"\x04Card\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x10\n" +
 	"\x03set\x18\x02 \x01(\tR\x03set\x12\x16\n" +
@@ -863,7 +879,8 @@ const file_proto_cards_proto_rawDesc = "" +
 	"\x05count\x18\x04 \x01(\x05R\x05count\x12\x1b\n" +
 	"\timage_url\x18\x05 \x01(\tR\bimageUrl\x12%\n" +
 	"\x06prices\x18\x06 \x01(\v2\r.cards.PricesR\x06prices\x12\x16\n" +
-	"\x06colors\x18\a \x03(\tR\x06colors\"d\n" +
+	"\x06colors\x18\a \x03(\tR\x06colors\x12\x16\n" +
+	"\x06rarity\x18\b \x01(\tR\x06rarity\"d\n" +
 	"\x0eAddCardRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x10\n" +
 	"\x03set\x18\x02 \x01(\tR\x03set\x12\x16\n" +
@@ -888,14 +905,15 @@ const file_proto_cards_proto_rawDesc = "" +
 	"page_token\x18\x03 \x01(\tR\tpageToken\"b\n" +
 	"\x15GetCardsBySetResponse\x12!\n" +
 	"\x05cards\x18\x01 \x03(\v2\v.cards.CardR\x05cards\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\x8e\x01\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xa6\x01\n" +
 	"\x12SearchCardsRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x10\n" +
 	"\x03set\x18\x02 \x01(\tR\x03set\x12\x16\n" +
 	"\x06colors\x18\x03 \x03(\tR\x06colors\x12\x1b\n" +
 	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
-	"page_token\x18\x05 \x01(\tR\tpageToken\"`\n" +
+	"page_token\x18\x05 \x01(\tR\tpageToken\x12\x16\n" +
+	"\x06rarity\x18\x06 \x03(\tR\x06rarity\"`\n" +
 	"\x13SearchCardsResponse\x12!\n" +
 	"\x05cards\x18\x01 \x03(\v2\v.cards.CardR\x05cards\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"N\n" +
