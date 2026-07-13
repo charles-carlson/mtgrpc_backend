@@ -87,3 +87,11 @@ func (a *ConnectAdapter) ListCards(ctx context.Context, req *connect.Request[pb.
 	}
 	return connect.NewResponse(resp), nil
 }
+
+func (a *ConnectAdapter) ListSets(ctx context.Context, req *connect.Request[pb.ListSetsRequest]) (*connect.Response[pb.ListSetsResponse], error) {
+	resp, err := a.impl.ListSets(ctx, req.Msg)
+	if err != nil {
+		return nil, toConnectErr(err)
+	}
+	return connect.NewResponse(resp), nil
+}

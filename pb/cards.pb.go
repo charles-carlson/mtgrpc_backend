@@ -861,6 +861,86 @@ func (x *ListCardsResponse) GetNextPageToken() string {
 	return ""
 }
 
+type ListSetsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListSetsRequest) Reset() {
+	*x = ListSetsRequest{}
+	mi := &file_proto_cards_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListSetsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListSetsRequest) ProtoMessage() {}
+
+func (x *ListSetsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_cards_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListSetsRequest.ProtoReflect.Descriptor instead.
+func (*ListSetsRequest) Descriptor() ([]byte, []int) {
+	return file_proto_cards_proto_rawDescGZIP(), []int{14}
+}
+
+type ListSetsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Sets          []string               `protobuf:"bytes,1,rep,name=sets,proto3" json:"sets,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListSetsResponse) Reset() {
+	*x = ListSetsResponse{}
+	mi := &file_proto_cards_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListSetsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListSetsResponse) ProtoMessage() {}
+
+func (x *ListSetsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_cards_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListSetsResponse.ProtoReflect.Descriptor instead.
+func (*ListSetsResponse) Descriptor() ([]byte, []int) {
+	return file_proto_cards_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *ListSetsResponse) GetSets() []string {
+	if x != nil {
+		return x.Sets
+	}
+	return nil
+}
+
 var File_proto_cards_proto protoreflect.FileDescriptor
 
 const file_proto_cards_proto_rawDesc = "" +
@@ -923,14 +1003,18 @@ const file_proto_cards_proto_rawDesc = "" +
 	"page_token\x18\x02 \x01(\tR\tpageToken\"^\n" +
 	"\x11ListCardsResponse\x12!\n" +
 	"\x05cards\x18\x01 \x03(\v2\v.cards.CardR\x05cards\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken2\xa9\x03\n" +
+	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\x11\n" +
+	"\x0fListSetsRequest\"&\n" +
+	"\x10ListSetsResponse\x12\x12\n" +
+	"\x04sets\x18\x01 \x03(\tR\x04sets2\xe8\x03\n" +
 	"\x06MTGRPC\x12:\n" +
 	"\aAddCard\x12\x15.cards.AddCardRequest\x1a\x16.cards.AddCardResponse\"\x00\x12:\n" +
 	"\aGetCard\x12\x15.cards.GetCardRequest\x1a\x16.cards.GetCardResponse\"\x00\x12O\n" +
 	"\x0eGetCardsByName\x12\x1c.cards.GetCardsByNameRequest\x1a\x1d.cards.GetCardsByNameResponse\"\x00\x12L\n" +
 	"\rGetCardsBySet\x12\x1b.cards.GetCardsBySetRequest\x1a\x1c.cards.GetCardsBySetResponse\"\x00\x12F\n" +
 	"\vSearchCards\x12\x19.cards.SearchCardsRequest\x1a\x1a.cards.SearchCardsResponse\"\x00\x12@\n" +
-	"\tListCards\x12\x17.cards.ListCardsRequest\x1a\x18.cards.ListCardsResponse\"\x00B\x15Z\x13backend_nonsense/pbb\x06proto3"
+	"\tListCards\x12\x17.cards.ListCardsRequest\x1a\x18.cards.ListCardsResponse\"\x00\x12=\n" +
+	"\bListSets\x12\x16.cards.ListSetsRequest\x1a\x17.cards.ListSetsResponse\"\x00B\x15Z\x13backend_nonsense/pbb\x06proto3"
 
 var (
 	file_proto_cards_proto_rawDescOnce sync.Once
@@ -944,7 +1028,7 @@ func file_proto_cards_proto_rawDescGZIP() []byte {
 	return file_proto_cards_proto_rawDescData
 }
 
-var file_proto_cards_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_proto_cards_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_proto_cards_proto_goTypes = []any{
 	(*Prices)(nil),                 // 0: cards.Prices
 	(*Card)(nil),                   // 1: cards.Card
@@ -960,6 +1044,8 @@ var file_proto_cards_proto_goTypes = []any{
 	(*SearchCardsResponse)(nil),    // 11: cards.SearchCardsResponse
 	(*ListCardsRequest)(nil),       // 12: cards.ListCardsRequest
 	(*ListCardsResponse)(nil),      // 13: cards.ListCardsResponse
+	(*ListSetsRequest)(nil),        // 14: cards.ListSetsRequest
+	(*ListSetsResponse)(nil),       // 15: cards.ListSetsResponse
 }
 var file_proto_cards_proto_depIdxs = []int32{
 	0,  // 0: cards.Card.prices:type_name -> cards.Prices
@@ -975,14 +1061,16 @@ var file_proto_cards_proto_depIdxs = []int32{
 	8,  // 10: cards.MTGRPC.GetCardsBySet:input_type -> cards.GetCardsBySetRequest
 	10, // 11: cards.MTGRPC.SearchCards:input_type -> cards.SearchCardsRequest
 	12, // 12: cards.MTGRPC.ListCards:input_type -> cards.ListCardsRequest
-	3,  // 13: cards.MTGRPC.AddCard:output_type -> cards.AddCardResponse
-	5,  // 14: cards.MTGRPC.GetCard:output_type -> cards.GetCardResponse
-	7,  // 15: cards.MTGRPC.GetCardsByName:output_type -> cards.GetCardsByNameResponse
-	9,  // 16: cards.MTGRPC.GetCardsBySet:output_type -> cards.GetCardsBySetResponse
-	11, // 17: cards.MTGRPC.SearchCards:output_type -> cards.SearchCardsResponse
-	13, // 18: cards.MTGRPC.ListCards:output_type -> cards.ListCardsResponse
-	13, // [13:19] is the sub-list for method output_type
-	7,  // [7:13] is the sub-list for method input_type
+	14, // 13: cards.MTGRPC.ListSets:input_type -> cards.ListSetsRequest
+	3,  // 14: cards.MTGRPC.AddCard:output_type -> cards.AddCardResponse
+	5,  // 15: cards.MTGRPC.GetCard:output_type -> cards.GetCardResponse
+	7,  // 16: cards.MTGRPC.GetCardsByName:output_type -> cards.GetCardsByNameResponse
+	9,  // 17: cards.MTGRPC.GetCardsBySet:output_type -> cards.GetCardsBySetResponse
+	11, // 18: cards.MTGRPC.SearchCards:output_type -> cards.SearchCardsResponse
+	13, // 19: cards.MTGRPC.ListCards:output_type -> cards.ListCardsResponse
+	15, // 20: cards.MTGRPC.ListSets:output_type -> cards.ListSetsResponse
+	14, // [14:21] is the sub-list for method output_type
+	7,  // [7:14] is the sub-list for method input_type
 	7,  // [7:7] is the sub-list for extension type_name
 	7,  // [7:7] is the sub-list for extension extendee
 	0,  // [0:7] is the sub-list for field type_name
@@ -999,7 +1087,7 @@ func file_proto_cards_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_cards_proto_rawDesc), len(file_proto_cards_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -11,6 +11,7 @@ service MTGRPC {
     rpc GetCardsBySet(GetCardsBySetRequest)  returns (GetCardsBySetResponse){}
     rpc SearchCards(SearchCardsRequest)     returns (SearchCardsResponse){}
     rpc ListCards(ListCardsRequest)         returns (ListCardsResponse){}
+    rpc ListSets(ListSetsRequest)           returns(ListSetsResponse){}
 }
 
 //Prices message
@@ -101,4 +102,9 @@ message ListCardsRequest {
 message ListCardsResponse {
     repeated Card cards          = 1;
     string        next_page_token = 2;
+}
+
+message ListSetsRequest {}
+message ListSetsResponse {
+    repeated string sets = 1;
 }

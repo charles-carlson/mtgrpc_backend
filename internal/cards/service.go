@@ -98,3 +98,7 @@ func (svc *Service) SearchCards(ctx context.Context, name, set string, colors []
 		Rarity: rarity,
 	}, pageSize, pageToken)
 }
+
+func (svc *Service) ListSets(ctx context.Context) ([]string, error) {
+	return svc.store.ListSets(ctx)
+}

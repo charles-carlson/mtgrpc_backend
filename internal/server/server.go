@@ -44,6 +44,7 @@ type cardService interface {
 	GetCardsBySet(ctx context.Context, set string, pageSize int32, pageToken string) ([]store.Card, string, error)
 	SearchCards(ctx context.Context, name, set string, colors []string, rarity []string, pageSize int32, pageToken string) ([]store.Card, string, error)
 	ListCards(ctx context.Context, pageSize int32, pageToken string) ([]store.Card, string, error)
+	ListSets(ctx context.Context) ([]string, error)
 }
 
 type Server struct {
@@ -62,6 +63,7 @@ var (
 	errListCards             = status.Errorf(codes.Internal, "Unable to fetch collection")
 	errAddCardInvalid        = status.Errorf(codes.InvalidArgument, "Invalid Add Card requirements")
 	errAddCardInternal       = status.Errorf(codes.Internal, "Unable to add card to store")
+	errListSets              = status.Errorf(codes.Internal, "Unable to retrieve set information")
 )
 
 func New(svc cardService) *Server {
@@ -140,4 +142,12 @@ func (s *Server) ListCards(ctx context.Context, req *pb.ListCardsRequest) (*pb.L
 		return nil, errListCards
 	}
 	return &pb.ListCardsResponse{Cards: toProtoCards(results), NextPageToken: nextToken}, nil
+}
+
+func (s *Server) ListSets(ctx context.Context, req *pb.ListSetsRequest) (*pb.ListSetsResponse, error) {
+	results, err := s.cards.ListSets(ctx)
+	if err != nil {
+		return nil, errListSets
+	}
+	return &pb.ListSetsResponse{Sets: results}, nil
 }

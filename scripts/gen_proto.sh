@@ -10,6 +10,8 @@ protoc \
   --go_opt=module=backend_nonsense \
   --go-grpc_out=. \
   --go-grpc_opt=module=backend_nonsense \
+  --connect-go_out=. \
+  --connect-go_opt=module=backend_nonsense \
   proto/cards.proto
 
 echo "proto generated successfully"

@@ -20,9 +20,11 @@ type stubCardService struct {
 	getCardsBySet  []store.Card
 	searchCards    []store.Card
 	listCards      []store.Card
+	listSets       []string
 	getErr         error
 	searchErr      error
 	listErr        error
+	listSetsErr    error
 }
 
 func (s *stubCardService) AddCard(_ context.Context, _ store.Card) error {
@@ -42,6 +44,9 @@ func (s *stubCardService) SearchCards(_ context.Context, _, _ string, _ []string
 }
 func (s *stubCardService) ListCards(_ context.Context, _ int32, _ string) ([]store.Card, string, error) {
 	return s.listCards, "", s.listErr
+}
+func (s *stubCardService) ListSets(_ context.Context) ([]string, error) {
+	return s.listSets, s.listSetsErr
 }
 func TestSearchCards_Success(t *testing.T) {
 	srv := New(&stubCardService{

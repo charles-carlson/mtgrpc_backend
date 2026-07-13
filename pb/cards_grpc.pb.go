@@ -25,6 +25,7 @@ const (
 	MTGRPC_GetCardsBySet_FullMethodName  = "/cards.MTGRPC/GetCardsBySet"
 	MTGRPC_SearchCards_FullMethodName    = "/cards.MTGRPC/SearchCards"
 	MTGRPC_ListCards_FullMethodName      = "/cards.MTGRPC/ListCards"
+	MTGRPC_ListSets_FullMethodName       = "/cards.MTGRPC/ListSets"
 )
 
 // MTGRPCClient is the client API for MTGRPC service.
@@ -37,6 +38,7 @@ type MTGRPCClient interface {
 	GetCardsBySet(ctx context.Context, in *GetCardsBySetRequest, opts ...grpc.CallOption) (*GetCardsBySetResponse, error)
 	SearchCards(ctx context.Context, in *SearchCardsRequest, opts ...grpc.CallOption) (*SearchCardsResponse, error)
 	ListCards(ctx context.Context, in *ListCardsRequest, opts ...grpc.CallOption) (*ListCardsResponse, error)
+	ListSets(ctx context.Context, in *ListSetsRequest, opts ...grpc.CallOption) (*ListSetsResponse, error)
 }
 
 type mTGRPCClient struct {
@@ -107,6 +109,16 @@ func (c *mTGRPCClient) ListCards(ctx context.Context, in *ListCardsRequest, opts
 	return out, nil
 }
 
+func (c *mTGRPCClient) ListSets(ctx context.Context, in *ListSetsRequest, opts ...grpc.CallOption) (*ListSetsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListSetsResponse)
+	err := c.cc.Invoke(ctx, MTGRPC_ListSets_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MTGRPCServer is the server API for MTGRPC service.
 // All implementations must embed UnimplementedMTGRPCServer
 // for forward compatibility.
@@ -117,6 +129,7 @@ type MTGRPCServer interface {
 	GetCardsBySet(context.Context, *GetCardsBySetRequest) (*GetCardsBySetResponse, error)
 	SearchCards(context.Context, *SearchCardsRequest) (*SearchCardsResponse, error)
 	ListCards(context.Context, *ListCardsRequest) (*ListCardsResponse, error)
+	ListSets(context.Context, *ListSetsRequest) (*ListSetsResponse, error)
 	mustEmbedUnimplementedMTGRPCServer()
 }
 
@@ -144,6 +157,9 @@ func (UnimplementedMTGRPCServer) SearchCards(context.Context, *SearchCardsReques
 }
 func (UnimplementedMTGRPCServer) ListCards(context.Context, *ListCardsRequest) (*ListCardsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListCards not implemented")
+}
+func (UnimplementedMTGRPCServer) ListSets(context.Context, *ListSetsRequest) (*ListSetsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListSets not implemented")
 }
 func (UnimplementedMTGRPCServer) mustEmbedUnimplementedMTGRPCServer() {}
 func (UnimplementedMTGRPCServer) testEmbeddedByValue()                {}
@@ -274,6 +290,24 @@ func _MTGRPC_ListCards_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MTGRPC_ListSets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListSetsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MTGRPCServer).ListSets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MTGRPC_ListSets_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MTGRPCServer).ListSets(ctx, req.(*ListSetsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MTGRPC_ServiceDesc is the grpc.ServiceDesc for MTGRPC service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -304,6 +338,10 @@ var MTGRPC_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListCards",
 			Handler:    _MTGRPC_ListCards_Handler,
+		},
+		{
+			MethodName: "ListSets",
+			Handler:    _MTGRPC_ListSets_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

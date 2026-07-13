@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -433,6 +434,41 @@ func (s *Store) UpdatePrices(ctx context.Context, card Card) error {
 		},
 	})
 	return err
+}
+func (s *Store) ListSets(ctx context.Context) ([]string, error) {
+	attrNames := map[string]string{"#s": "set"}
+	//This will take up less bytes then saying map[string]bool, as bool adds the question of 'is it false'
+	seen := map[string]struct{}{}
+
+	input := dynamodb.ScanInput{
+		TableName:                aws.String(TableName),
+		ProjectionExpression:     aws.String("#s"),
+		ExpressionAttributeNames: attrNames,
+	}
+	paginator := dynamodb.NewScanPaginator(s.db, &input)
+	for paginator.HasMorePages() {
+		var page []struct {
+			Set string `dynamodbav:"set"`
+		}
+		out, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, err
+		}
+		if err := attributevalue.UnmarshalListOfMaps(out.Items, &page); err != nil {
+			return nil, err
+		}
+		for _, c := range page {
+			if c.Set != "" { // skip any item missing a set
+				seen[c.Set] = struct{}{}
+			}
+		}
+	}
+	sets := make([]string, 0, len(seen))
+	for s := range seen {
+		sets = append(sets, s)
+	}
+	sort.Strings(sets)
+	return sets, nil
 }
 func encodePageToken(key map[string]types.AttributeValue) (string, error) {
 	if key == nil {
