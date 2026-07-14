@@ -14,6 +14,11 @@ resource "aws_dynamodb_table" "cards" {
     type = "S"
   }
 
+  attribute {
+    name = "set"
+    type = "S"
+  }
+
   global_secondary_index {
     name            = "set-index"
     hash_key        = "set"

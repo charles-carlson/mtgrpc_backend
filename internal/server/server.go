@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"log"
 
 	"backend_nonsense/internal/store"
 	"backend_nonsense/pb"
@@ -130,6 +131,7 @@ func (s *Server) GetCardsBySet(ctx context.Context, req *pb.GetCardsBySetRequest
 func (s *Server) SearchCards(ctx context.Context, req *pb.SearchCardsRequest) (*pb.SearchCardsResponse, error) {
 	results, nextToken, err := s.cards.SearchCards(ctx, req.Name, req.Set, req.Colors, req.Rarity, req.PageSize, req.PageToken)
 	if err != nil {
+		log.Printf("SearchCards(name=%q set=%q colors=%v rarity=%v): %v", req.Name, req.Set, req.Colors, req.Rarity, err)
 		return nil, errQueryCardsInternal
 	}
 
