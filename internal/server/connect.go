@@ -56,22 +56,6 @@ func (a *ConnectAdapter) GetCard(ctx context.Context, req *connect.Request[pb.Ge
 	return connect.NewResponse(resp), nil
 }
 
-func (a *ConnectAdapter) GetCardsByName(ctx context.Context, req *connect.Request[pb.GetCardsByNameRequest]) (*connect.Response[pb.GetCardsByNameResponse], error) {
-	resp, err := a.impl.GetCardsByName(ctx, req.Msg)
-	if err != nil {
-		return nil, toConnectErr(err)
-	}
-	return connect.NewResponse(resp), nil
-}
-
-func (a *ConnectAdapter) GetCardsBySet(ctx context.Context, req *connect.Request[pb.GetCardsBySetRequest]) (*connect.Response[pb.GetCardsBySetResponse], error) {
-	resp, err := a.impl.GetCardsBySet(ctx, req.Msg)
-	if err != nil {
-		return nil, toConnectErr(err)
-	}
-	return connect.NewResponse(resp), nil
-}
-
 func (a *ConnectAdapter) SearchCards(ctx context.Context, req *connect.Request[pb.SearchCardsRequest]) (*connect.Response[pb.SearchCardsResponse], error) {
 	resp, err := a.impl.SearchCards(ctx, req.Msg)
 	if err != nil {

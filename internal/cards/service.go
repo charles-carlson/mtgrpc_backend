@@ -3,10 +3,19 @@ package cards
 import (
 	"context"
 	"log"
+	"time"
 
 	"backend_nonsense/internal/scryfall"
 	"backend_nonsense/internal/store"
 )
+
+// future builds might be required for decklist service,
+type snapshot struct {
+	allCards []store.Card //all cards
+	byKey    []store.Card //name->set->number
+	sets     []string     // list of sets
+	builtAt  time.Time
+}
 
 // Service handles card operations shared across ingest and manual entry.
 type Service struct {
@@ -72,16 +81,6 @@ func (svc *Service) RemoveCard(ctx context.Context, card store.Card) error {
 // GetCard returns a specific card by name, set, and number.
 func (svc *Service) GetCard(ctx context.Context, name, set, number string) (*store.Card, error) {
 	return svc.store.GetCard(ctx, name, set, number)
-}
-
-// GetCardsByName returns all printings of a card across sets.
-func (svc *Service) GetCardsByName(ctx context.Context, name string) ([]store.Card, error) {
-	return svc.store.QueryByName(ctx, name)
-}
-
-// GetCardsBySet returns all cards in a given set.
-func (svc *Service) GetCardsBySet(ctx context.Context, set string, pageSize int32, pageToken string) ([]store.Card, string, error) {
-	return svc.store.QueryBySet(ctx, set, pageSize, pageToken)
 }
 
 // ListCards returns all cards in the collection.

@@ -7,8 +7,6 @@ option go_package = "backend_nonsense/pb";
 service MTGRPC {
     rpc AddCard(AddCardRequest)             returns (AddCardResponse){}
     rpc GetCard(GetCardRequest)             returns (GetCardResponse){}
-    rpc GetCardsByName(GetCardsByNameRequest) returns (GetCardsByNameResponse){}
-    rpc GetCardsBySet(GetCardsBySetRequest)  returns (GetCardsBySetResponse){}
     rpc SearchCards(SearchCardsRequest)     returns (SearchCardsResponse){}
     rpc ListCards(ListCardsRequest)         returns (ListCardsResponse){}
     rpc ListSets(ListSetsRequest)           returns(ListSetsResponse){}
@@ -55,27 +53,6 @@ message GetCardRequest {
 
 message GetCardResponse {
     Card card = 1;
-}
-
-// GetCardsByName — all printings of a card across sets
-message GetCardsByNameRequest {
-    string name = 1;
-}
-
-message GetCardsByNameResponse {
-    repeated Card cards = 1;
-}
-
-// GetCardsBySet — all cards in a given set
-message GetCardsBySetRequest {
-    string set        = 1;
-    int32  page_size  = 2;
-    string page_token = 3;
-}
-
-message GetCardsBySetResponse {
-    repeated Card cards          = 1;
-    string        next_page_token = 2;
 }
 
 // SearchCards — flexible filter, all fields optional

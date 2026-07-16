@@ -19,13 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	MTGRPC_AddCard_FullMethodName        = "/cards.MTGRPC/AddCard"
-	MTGRPC_GetCard_FullMethodName        = "/cards.MTGRPC/GetCard"
-	MTGRPC_GetCardsByName_FullMethodName = "/cards.MTGRPC/GetCardsByName"
-	MTGRPC_GetCardsBySet_FullMethodName  = "/cards.MTGRPC/GetCardsBySet"
-	MTGRPC_SearchCards_FullMethodName    = "/cards.MTGRPC/SearchCards"
-	MTGRPC_ListCards_FullMethodName      = "/cards.MTGRPC/ListCards"
-	MTGRPC_ListSets_FullMethodName       = "/cards.MTGRPC/ListSets"
+	MTGRPC_AddCard_FullMethodName     = "/cards.MTGRPC/AddCard"
+	MTGRPC_GetCard_FullMethodName     = "/cards.MTGRPC/GetCard"
+	MTGRPC_SearchCards_FullMethodName = "/cards.MTGRPC/SearchCards"
+	MTGRPC_ListCards_FullMethodName   = "/cards.MTGRPC/ListCards"
+	MTGRPC_ListSets_FullMethodName    = "/cards.MTGRPC/ListSets"
 )
 
 // MTGRPCClient is the client API for MTGRPC service.
@@ -34,8 +32,6 @@ const (
 type MTGRPCClient interface {
 	AddCard(ctx context.Context, in *AddCardRequest, opts ...grpc.CallOption) (*AddCardResponse, error)
 	GetCard(ctx context.Context, in *GetCardRequest, opts ...grpc.CallOption) (*GetCardResponse, error)
-	GetCardsByName(ctx context.Context, in *GetCardsByNameRequest, opts ...grpc.CallOption) (*GetCardsByNameResponse, error)
-	GetCardsBySet(ctx context.Context, in *GetCardsBySetRequest, opts ...grpc.CallOption) (*GetCardsBySetResponse, error)
 	SearchCards(ctx context.Context, in *SearchCardsRequest, opts ...grpc.CallOption) (*SearchCardsResponse, error)
 	ListCards(ctx context.Context, in *ListCardsRequest, opts ...grpc.CallOption) (*ListCardsResponse, error)
 	ListSets(ctx context.Context, in *ListSetsRequest, opts ...grpc.CallOption) (*ListSetsResponse, error)
@@ -63,26 +59,6 @@ func (c *mTGRPCClient) GetCard(ctx context.Context, in *GetCardRequest, opts ...
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetCardResponse)
 	err := c.cc.Invoke(ctx, MTGRPC_GetCard_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *mTGRPCClient) GetCardsByName(ctx context.Context, in *GetCardsByNameRequest, opts ...grpc.CallOption) (*GetCardsByNameResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetCardsByNameResponse)
-	err := c.cc.Invoke(ctx, MTGRPC_GetCardsByName_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *mTGRPCClient) GetCardsBySet(ctx context.Context, in *GetCardsBySetRequest, opts ...grpc.CallOption) (*GetCardsBySetResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetCardsBySetResponse)
-	err := c.cc.Invoke(ctx, MTGRPC_GetCardsBySet_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -125,8 +101,6 @@ func (c *mTGRPCClient) ListSets(ctx context.Context, in *ListSetsRequest, opts .
 type MTGRPCServer interface {
 	AddCard(context.Context, *AddCardRequest) (*AddCardResponse, error)
 	GetCard(context.Context, *GetCardRequest) (*GetCardResponse, error)
-	GetCardsByName(context.Context, *GetCardsByNameRequest) (*GetCardsByNameResponse, error)
-	GetCardsBySet(context.Context, *GetCardsBySetRequest) (*GetCardsBySetResponse, error)
 	SearchCards(context.Context, *SearchCardsRequest) (*SearchCardsResponse, error)
 	ListCards(context.Context, *ListCardsRequest) (*ListCardsResponse, error)
 	ListSets(context.Context, *ListSetsRequest) (*ListSetsResponse, error)
@@ -145,12 +119,6 @@ func (UnimplementedMTGRPCServer) AddCard(context.Context, *AddCardRequest) (*Add
 }
 func (UnimplementedMTGRPCServer) GetCard(context.Context, *GetCardRequest) (*GetCardResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetCard not implemented")
-}
-func (UnimplementedMTGRPCServer) GetCardsByName(context.Context, *GetCardsByNameRequest) (*GetCardsByNameResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetCardsByName not implemented")
-}
-func (UnimplementedMTGRPCServer) GetCardsBySet(context.Context, *GetCardsBySetRequest) (*GetCardsBySetResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetCardsBySet not implemented")
 }
 func (UnimplementedMTGRPCServer) SearchCards(context.Context, *SearchCardsRequest) (*SearchCardsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method SearchCards not implemented")
@@ -214,42 +182,6 @@ func _MTGRPC_GetCard_Handler(srv interface{}, ctx context.Context, dec func(inte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(MTGRPCServer).GetCard(ctx, req.(*GetCardRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _MTGRPC_GetCardsByName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetCardsByNameRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MTGRPCServer).GetCardsByName(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: MTGRPC_GetCardsByName_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MTGRPCServer).GetCardsByName(ctx, req.(*GetCardsByNameRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _MTGRPC_GetCardsBySet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetCardsBySetRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MTGRPCServer).GetCardsBySet(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: MTGRPC_GetCardsBySet_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MTGRPCServer).GetCardsBySet(ctx, req.(*GetCardsBySetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -322,14 +254,6 @@ var MTGRPC_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetCard",
 			Handler:    _MTGRPC_GetCard_Handler,
-		},
-		{
-			MethodName: "GetCardsByName",
-			Handler:    _MTGRPC_GetCardsByName_Handler,
-		},
-		{
-			MethodName: "GetCardsBySet",
-			Handler:    _MTGRPC_GetCardsBySet_Handler,
 		},
 		{
 			MethodName: "SearchCards",

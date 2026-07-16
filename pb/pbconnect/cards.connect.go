@@ -37,10 +37,6 @@ const (
 	MTGRPCAddCardProcedure = "/cards.MTGRPC/AddCard"
 	// MTGRPCGetCardProcedure is the fully-qualified name of the MTGRPC's GetCard RPC.
 	MTGRPCGetCardProcedure = "/cards.MTGRPC/GetCard"
-	// MTGRPCGetCardsByNameProcedure is the fully-qualified name of the MTGRPC's GetCardsByName RPC.
-	MTGRPCGetCardsByNameProcedure = "/cards.MTGRPC/GetCardsByName"
-	// MTGRPCGetCardsBySetProcedure is the fully-qualified name of the MTGRPC's GetCardsBySet RPC.
-	MTGRPCGetCardsBySetProcedure = "/cards.MTGRPC/GetCardsBySet"
 	// MTGRPCSearchCardsProcedure is the fully-qualified name of the MTGRPC's SearchCards RPC.
 	MTGRPCSearchCardsProcedure = "/cards.MTGRPC/SearchCards"
 	// MTGRPCListCardsProcedure is the fully-qualified name of the MTGRPC's ListCards RPC.
@@ -53,8 +49,6 @@ const (
 type MTGRPCClient interface {
 	AddCard(context.Context, *connect.Request[pb.AddCardRequest]) (*connect.Response[pb.AddCardResponse], error)
 	GetCard(context.Context, *connect.Request[pb.GetCardRequest]) (*connect.Response[pb.GetCardResponse], error)
-	GetCardsByName(context.Context, *connect.Request[pb.GetCardsByNameRequest]) (*connect.Response[pb.GetCardsByNameResponse], error)
-	GetCardsBySet(context.Context, *connect.Request[pb.GetCardsBySetRequest]) (*connect.Response[pb.GetCardsBySetResponse], error)
 	SearchCards(context.Context, *connect.Request[pb.SearchCardsRequest]) (*connect.Response[pb.SearchCardsResponse], error)
 	ListCards(context.Context, *connect.Request[pb.ListCardsRequest]) (*connect.Response[pb.ListCardsResponse], error)
 	ListSets(context.Context, *connect.Request[pb.ListSetsRequest]) (*connect.Response[pb.ListSetsResponse], error)
@@ -83,18 +77,6 @@ func NewMTGRPCClient(httpClient connect.HTTPClient, baseURL string, opts ...conn
 			connect.WithSchema(mTGRPCMethods.ByName("GetCard")),
 			connect.WithClientOptions(opts...),
 		),
-		getCardsByName: connect.NewClient[pb.GetCardsByNameRequest, pb.GetCardsByNameResponse](
-			httpClient,
-			baseURL+MTGRPCGetCardsByNameProcedure,
-			connect.WithSchema(mTGRPCMethods.ByName("GetCardsByName")),
-			connect.WithClientOptions(opts...),
-		),
-		getCardsBySet: connect.NewClient[pb.GetCardsBySetRequest, pb.GetCardsBySetResponse](
-			httpClient,
-			baseURL+MTGRPCGetCardsBySetProcedure,
-			connect.WithSchema(mTGRPCMethods.ByName("GetCardsBySet")),
-			connect.WithClientOptions(opts...),
-		),
 		searchCards: connect.NewClient[pb.SearchCardsRequest, pb.SearchCardsResponse](
 			httpClient,
 			baseURL+MTGRPCSearchCardsProcedure,
@@ -118,13 +100,11 @@ func NewMTGRPCClient(httpClient connect.HTTPClient, baseURL string, opts ...conn
 
 // mTGRPCClient implements MTGRPCClient.
 type mTGRPCClient struct {
-	addCard        *connect.Client[pb.AddCardRequest, pb.AddCardResponse]
-	getCard        *connect.Client[pb.GetCardRequest, pb.GetCardResponse]
-	getCardsByName *connect.Client[pb.GetCardsByNameRequest, pb.GetCardsByNameResponse]
-	getCardsBySet  *connect.Client[pb.GetCardsBySetRequest, pb.GetCardsBySetResponse]
-	searchCards    *connect.Client[pb.SearchCardsRequest, pb.SearchCardsResponse]
-	listCards      *connect.Client[pb.ListCardsRequest, pb.ListCardsResponse]
-	listSets       *connect.Client[pb.ListSetsRequest, pb.ListSetsResponse]
+	addCard     *connect.Client[pb.AddCardRequest, pb.AddCardResponse]
+	getCard     *connect.Client[pb.GetCardRequest, pb.GetCardResponse]
+	searchCards *connect.Client[pb.SearchCardsRequest, pb.SearchCardsResponse]
+	listCards   *connect.Client[pb.ListCardsRequest, pb.ListCardsResponse]
+	listSets    *connect.Client[pb.ListSetsRequest, pb.ListSetsResponse]
 }
 
 // AddCard calls cards.MTGRPC.AddCard.
@@ -135,16 +115,6 @@ func (c *mTGRPCClient) AddCard(ctx context.Context, req *connect.Request[pb.AddC
 // GetCard calls cards.MTGRPC.GetCard.
 func (c *mTGRPCClient) GetCard(ctx context.Context, req *connect.Request[pb.GetCardRequest]) (*connect.Response[pb.GetCardResponse], error) {
 	return c.getCard.CallUnary(ctx, req)
-}
-
-// GetCardsByName calls cards.MTGRPC.GetCardsByName.
-func (c *mTGRPCClient) GetCardsByName(ctx context.Context, req *connect.Request[pb.GetCardsByNameRequest]) (*connect.Response[pb.GetCardsByNameResponse], error) {
-	return c.getCardsByName.CallUnary(ctx, req)
-}
-
-// GetCardsBySet calls cards.MTGRPC.GetCardsBySet.
-func (c *mTGRPCClient) GetCardsBySet(ctx context.Context, req *connect.Request[pb.GetCardsBySetRequest]) (*connect.Response[pb.GetCardsBySetResponse], error) {
-	return c.getCardsBySet.CallUnary(ctx, req)
 }
 
 // SearchCards calls cards.MTGRPC.SearchCards.
@@ -166,8 +136,6 @@ func (c *mTGRPCClient) ListSets(ctx context.Context, req *connect.Request[pb.Lis
 type MTGRPCHandler interface {
 	AddCard(context.Context, *connect.Request[pb.AddCardRequest]) (*connect.Response[pb.AddCardResponse], error)
 	GetCard(context.Context, *connect.Request[pb.GetCardRequest]) (*connect.Response[pb.GetCardResponse], error)
-	GetCardsByName(context.Context, *connect.Request[pb.GetCardsByNameRequest]) (*connect.Response[pb.GetCardsByNameResponse], error)
-	GetCardsBySet(context.Context, *connect.Request[pb.GetCardsBySetRequest]) (*connect.Response[pb.GetCardsBySetResponse], error)
 	SearchCards(context.Context, *connect.Request[pb.SearchCardsRequest]) (*connect.Response[pb.SearchCardsResponse], error)
 	ListCards(context.Context, *connect.Request[pb.ListCardsRequest]) (*connect.Response[pb.ListCardsResponse], error)
 	ListSets(context.Context, *connect.Request[pb.ListSetsRequest]) (*connect.Response[pb.ListSetsResponse], error)
@@ -190,18 +158,6 @@ func NewMTGRPCHandler(svc MTGRPCHandler, opts ...connect.HandlerOption) (string,
 		MTGRPCGetCardProcedure,
 		svc.GetCard,
 		connect.WithSchema(mTGRPCMethods.ByName("GetCard")),
-		connect.WithHandlerOptions(opts...),
-	)
-	mTGRPCGetCardsByNameHandler := connect.NewUnaryHandler(
-		MTGRPCGetCardsByNameProcedure,
-		svc.GetCardsByName,
-		connect.WithSchema(mTGRPCMethods.ByName("GetCardsByName")),
-		connect.WithHandlerOptions(opts...),
-	)
-	mTGRPCGetCardsBySetHandler := connect.NewUnaryHandler(
-		MTGRPCGetCardsBySetProcedure,
-		svc.GetCardsBySet,
-		connect.WithSchema(mTGRPCMethods.ByName("GetCardsBySet")),
 		connect.WithHandlerOptions(opts...),
 	)
 	mTGRPCSearchCardsHandler := connect.NewUnaryHandler(
@@ -228,10 +184,6 @@ func NewMTGRPCHandler(svc MTGRPCHandler, opts ...connect.HandlerOption) (string,
 			mTGRPCAddCardHandler.ServeHTTP(w, r)
 		case MTGRPCGetCardProcedure:
 			mTGRPCGetCardHandler.ServeHTTP(w, r)
-		case MTGRPCGetCardsByNameProcedure:
-			mTGRPCGetCardsByNameHandler.ServeHTTP(w, r)
-		case MTGRPCGetCardsBySetProcedure:
-			mTGRPCGetCardsBySetHandler.ServeHTTP(w, r)
 		case MTGRPCSearchCardsProcedure:
 			mTGRPCSearchCardsHandler.ServeHTTP(w, r)
 		case MTGRPCListCardsProcedure:
@@ -253,14 +205,6 @@ func (UnimplementedMTGRPCHandler) AddCard(context.Context, *connect.Request[pb.A
 
 func (UnimplementedMTGRPCHandler) GetCard(context.Context, *connect.Request[pb.GetCardRequest]) (*connect.Response[pb.GetCardResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("cards.MTGRPC.GetCard is not implemented"))
-}
-
-func (UnimplementedMTGRPCHandler) GetCardsByName(context.Context, *connect.Request[pb.GetCardsByNameRequest]) (*connect.Response[pb.GetCardsByNameResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("cards.MTGRPC.GetCardsByName is not implemented"))
-}
-
-func (UnimplementedMTGRPCHandler) GetCardsBySet(context.Context, *connect.Request[pb.GetCardsBySetRequest]) (*connect.Response[pb.GetCardsBySetResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("cards.MTGRPC.GetCardsBySet is not implemented"))
 }
 
 func (UnimplementedMTGRPCHandler) SearchCards(context.Context, *connect.Request[pb.SearchCardsRequest]) (*connect.Response[pb.SearchCardsResponse], error) {

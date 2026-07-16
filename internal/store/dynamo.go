@@ -201,34 +201,6 @@ func (s *Store) GetCard(ctx context.Context, name, set, number string) (*Card, e
 	return &card, nil
 }
 
-// QueryByName returns all printings of a card across sets.
-func (s *Store) QueryByName(ctx context.Context, name string) ([]Card, error) {
-	nameKey, err := attributevalue.Marshal(name)
-	if err != nil {
-		return nil, err
-	}
-
-	out, err := s.db.Query(ctx, &dynamodb.QueryInput{
-		TableName:              aws.String(TableName),
-		KeyConditionExpression: aws.String("#n = :name"),
-		ExpressionAttributeNames: map[string]string{
-			"#n": "name",
-		},
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":name": nameKey,
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	var cards []Card
-	if err := attributevalue.UnmarshalListOfMaps(out.Items, &cards); err != nil {
-		return nil, err
-	}
-	return cards, nil
-}
-
 // ScanAll returns every card in the collection.
 func (s *Store) ScanAll(ctx context.Context, pageSize int32, pageToken string) ([]Card, string, error) {
 	startKey, err := decodePageToken(pageToken)
@@ -347,49 +319,6 @@ func (s *Store) Search(ctx context.Context, f SearchFilter, pageSize int32, page
 
 }
 
-// QueryBySet returns all cards in a given set using a Scan with filter.
-// set is not a key attribute so a Query is not possible without a GSI.
-func (s *Store) QueryBySet(ctx context.Context, set string, pageSize int32, pageToken string) ([]Card, string, error) {
-	startKey, err := decodePageToken(pageToken)
-	if err != nil {
-		return nil, "", err
-	}
-
-	setKey, err := attributevalue.Marshal(set)
-	if err != nil {
-		return nil, "", err
-	}
-	input := &dynamodb.QueryInput{
-		TableName:        aws.String(TableName),
-		IndexName:        aws.String("set-index"),
-		FilterExpression: aws.String("#s = :set"),
-		ExpressionAttributeNames: map[string]string{
-			"#s": "set",
-		},
-		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":set": setKey,
-		},
-	}
-	if pageSize > 0 {
-		input.Limit = aws.Int32(pageSize)
-	}
-	if startKey != nil {
-		input.ExclusiveStartKey = startKey
-	}
-	out, err := s.db.Query(ctx, input)
-	if err != nil {
-		return nil, "", err
-	}
-	nextToken, err := encodePageToken(out.LastEvaluatedKey)
-	if err != nil {
-		return nil, "", err
-	}
-	var cards []Card
-	if err := attributevalue.UnmarshalListOfMaps(out.Items, &cards); err != nil {
-		return nil, "", err
-	}
-	return cards, nextToken, nil
-}
 func (s *Store) ScanAllCards(ctx context.Context) ([]Card, error) {
 	var all []Card
 	var startKey map[string]types.AttributeValue

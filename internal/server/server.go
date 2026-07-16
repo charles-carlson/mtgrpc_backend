@@ -41,8 +41,6 @@ func toProtoCards(cs []store.Card) []*pb.Card {
 type cardService interface {
 	AddCard(ctx context.Context, card store.Card) error
 	GetCard(ctx context.Context, name, set, number string) (*store.Card, error)
-	GetCardsByName(ctx context.Context, name string) ([]store.Card, error)
-	GetCardsBySet(ctx context.Context, set string, pageSize int32, pageToken string) ([]store.Card, string, error)
 	SearchCards(ctx context.Context, name, set string, colors []string, rarity []string, pageSize int32, pageToken string) ([]store.Card, string, error)
 	ListCards(ctx context.Context, pageSize int32, pageToken string) ([]store.Card, string, error)
 	ListSets(ctx context.Context) ([]string, error)
@@ -100,32 +98,6 @@ func (s *Server) GetCard(ctx context.Context, req *pb.GetCardRequest) (*pb.GetCa
 	}
 
 	return &pb.GetCardResponse{Card: toProtoCard(*card)}, nil
-}
-
-func (s *Server) GetCardsByName(ctx context.Context, req *pb.GetCardsByNameRequest) (*pb.GetCardsByNameResponse, error) {
-	if req.Name == "" {
-		return nil, errGetCardsByNameInvalid
-	}
-
-	results, err := s.cards.GetCardsByName(ctx, req.Name)
-	if err != nil {
-		return nil, errGetCardsByName
-	}
-
-	return &pb.GetCardsByNameResponse{Cards: toProtoCards(results)}, nil
-}
-
-func (s *Server) GetCardsBySet(ctx context.Context, req *pb.GetCardsBySetRequest) (*pb.GetCardsBySetResponse, error) {
-	if req.Set == "" {
-		return nil, errGetCardsBySetInvalid
-	}
-
-	results, nextToken, err := s.cards.GetCardsBySet(ctx, req.Set, req.PageSize, req.PageToken)
-	if err != nil {
-		return nil, errGetCardsBySet
-	}
-
-	return &pb.GetCardsBySetResponse{Cards: toProtoCards(results), NextPageToken: nextToken}, nil
 }
 
 func (s *Server) SearchCards(ctx context.Context, req *pb.SearchCardsRequest) (*pb.SearchCardsResponse, error) {
