@@ -40,14 +40,6 @@ func toConnectErr(err error) error {
 	return connect.NewError(connect.Code(st.Code()), errors.New(st.Message()))
 }
 
-func (a *ConnectAdapter) AddCard(ctx context.Context, req *connect.Request[pb.AddCardRequest]) (*connect.Response[pb.AddCardResponse], error) {
-	resp, err := a.impl.AddCard(ctx, req.Msg)
-	if err != nil {
-		return nil, toConnectErr(err)
-	}
-	return connect.NewResponse(resp), nil
-}
-
 func (a *ConnectAdapter) GetCard(ctx context.Context, req *connect.Request[pb.GetCardRequest]) (*connect.Response[pb.GetCardResponse], error) {
 	resp, err := a.impl.GetCard(ctx, req.Msg)
 	if err != nil {

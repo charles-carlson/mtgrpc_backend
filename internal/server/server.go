@@ -39,7 +39,6 @@ func toProtoCards(cs []store.Card) []*pb.Card {
 }
 
 type cardService interface {
-	AddCard(ctx context.Context, card store.Card) error
 	GetCard(ctx context.Context, name, set, number string) (*store.Card, error)
 	SearchCards(ctx context.Context, name, set string, colors []string, rarity []string, pageSize int32, pageToken string) ([]store.Card, string, error)
 	ListCards(ctx context.Context, pageSize int32, pageToken string) ([]store.Card, string, error)
@@ -52,36 +51,15 @@ type Server struct {
 }
 
 var (
-	errGetCard               = status.Errorf(codes.Internal, "Unable to retrieve the card")
-	errGetCardsByName        = status.Errorf(codes.Internal, "Unable to retrieve cards by name")
-	errGetCardsByNameInvalid = status.Errorf(codes.InvalidArgument, "Invalid name argument")
-	errGetCardsBySet         = status.Errorf(codes.Internal, "Unable to retrieve cards by set")
-	errGetCardsBySetInvalid  = status.Errorf(codes.InvalidArgument, "Invalid set argument")
-	errQueryCardsInvalid     = status.Errorf(codes.InvalidArgument, "Invalid arguments given to retrieve cards")
-	errQueryCardsInternal    = status.Errorf(codes.Internal, "Unable to query cards")
-	errListCards             = status.Errorf(codes.Internal, "Unable to fetch collection")
-	errAddCardInvalid        = status.Errorf(codes.InvalidArgument, "Invalid Add Card requirements")
-	errAddCardInternal       = status.Errorf(codes.Internal, "Unable to add card to store")
-	errListSets              = status.Errorf(codes.Internal, "Unable to retrieve set information")
+	errGetCard            = status.Errorf(codes.Internal, "Unable to retrieve the card")
+	errQueryCardsInvalid  = status.Errorf(codes.InvalidArgument, "Invalid arguments given to retrieve cards")
+	errQueryCardsInternal = status.Errorf(codes.Internal, "Unable to query cards")
+	errListCards          = status.Errorf(codes.Internal, "Unable to fetch collection")
+	errListSets           = status.Errorf(codes.Internal, "Unable to retrieve set information")
 )
 
 func New(svc cardService) *Server {
 	return &Server{cards: svc}
-}
-
-func (s *Server) AddCard(ctx context.Context, req *pb.AddCardRequest) (*pb.AddCardResponse, error) {
-	if req.Name == "" && req.Set == "" && req.Number == "" {
-		return nil, errAddCardInvalid
-	}
-	err := s.cards.AddCard(ctx, store.Card{Name: req.Name, Set: req.Set, Number: req.Number, Count: int(req.Count)})
-	if err != nil {
-		return nil, errAddCardInternal
-	}
-	card, err := s.cards.GetCard(ctx, req.Name, req.Set, req.Number)
-	if err != nil {
-		return nil, errGetCard
-	}
-	return &pb.AddCardResponse{Card: toProtoCard(*card)}, nil
 }
 
 func (s *Server) GetCard(ctx context.Context, req *pb.GetCardRequest) (*pb.GetCardResponse, error) {

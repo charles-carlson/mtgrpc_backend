@@ -33,8 +33,6 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// MTGRPCAddCardProcedure is the fully-qualified name of the MTGRPC's AddCard RPC.
-	MTGRPCAddCardProcedure = "/cards.MTGRPC/AddCard"
 	// MTGRPCGetCardProcedure is the fully-qualified name of the MTGRPC's GetCard RPC.
 	MTGRPCGetCardProcedure = "/cards.MTGRPC/GetCard"
 	// MTGRPCSearchCardsProcedure is the fully-qualified name of the MTGRPC's SearchCards RPC.
@@ -47,7 +45,6 @@ const (
 
 // MTGRPCClient is a client for the cards.MTGRPC service.
 type MTGRPCClient interface {
-	AddCard(context.Context, *connect.Request[pb.AddCardRequest]) (*connect.Response[pb.AddCardResponse], error)
 	GetCard(context.Context, *connect.Request[pb.GetCardRequest]) (*connect.Response[pb.GetCardResponse], error)
 	SearchCards(context.Context, *connect.Request[pb.SearchCardsRequest]) (*connect.Response[pb.SearchCardsResponse], error)
 	ListCards(context.Context, *connect.Request[pb.ListCardsRequest]) (*connect.Response[pb.ListCardsResponse], error)
@@ -65,12 +62,6 @@ func NewMTGRPCClient(httpClient connect.HTTPClient, baseURL string, opts ...conn
 	baseURL = strings.TrimRight(baseURL, "/")
 	mTGRPCMethods := pb.File_proto_cards_proto.Services().ByName("MTGRPC").Methods()
 	return &mTGRPCClient{
-		addCard: connect.NewClient[pb.AddCardRequest, pb.AddCardResponse](
-			httpClient,
-			baseURL+MTGRPCAddCardProcedure,
-			connect.WithSchema(mTGRPCMethods.ByName("AddCard")),
-			connect.WithClientOptions(opts...),
-		),
 		getCard: connect.NewClient[pb.GetCardRequest, pb.GetCardResponse](
 			httpClient,
 			baseURL+MTGRPCGetCardProcedure,
@@ -100,16 +91,10 @@ func NewMTGRPCClient(httpClient connect.HTTPClient, baseURL string, opts ...conn
 
 // mTGRPCClient implements MTGRPCClient.
 type mTGRPCClient struct {
-	addCard     *connect.Client[pb.AddCardRequest, pb.AddCardResponse]
 	getCard     *connect.Client[pb.GetCardRequest, pb.GetCardResponse]
 	searchCards *connect.Client[pb.SearchCardsRequest, pb.SearchCardsResponse]
 	listCards   *connect.Client[pb.ListCardsRequest, pb.ListCardsResponse]
 	listSets    *connect.Client[pb.ListSetsRequest, pb.ListSetsResponse]
-}
-
-// AddCard calls cards.MTGRPC.AddCard.
-func (c *mTGRPCClient) AddCard(ctx context.Context, req *connect.Request[pb.AddCardRequest]) (*connect.Response[pb.AddCardResponse], error) {
-	return c.addCard.CallUnary(ctx, req)
 }
 
 // GetCard calls cards.MTGRPC.GetCard.
@@ -134,7 +119,6 @@ func (c *mTGRPCClient) ListSets(ctx context.Context, req *connect.Request[pb.Lis
 
 // MTGRPCHandler is an implementation of the cards.MTGRPC service.
 type MTGRPCHandler interface {
-	AddCard(context.Context, *connect.Request[pb.AddCardRequest]) (*connect.Response[pb.AddCardResponse], error)
 	GetCard(context.Context, *connect.Request[pb.GetCardRequest]) (*connect.Response[pb.GetCardResponse], error)
 	SearchCards(context.Context, *connect.Request[pb.SearchCardsRequest]) (*connect.Response[pb.SearchCardsResponse], error)
 	ListCards(context.Context, *connect.Request[pb.ListCardsRequest]) (*connect.Response[pb.ListCardsResponse], error)
@@ -148,12 +132,6 @@ type MTGRPCHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewMTGRPCHandler(svc MTGRPCHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	mTGRPCMethods := pb.File_proto_cards_proto.Services().ByName("MTGRPC").Methods()
-	mTGRPCAddCardHandler := connect.NewUnaryHandler(
-		MTGRPCAddCardProcedure,
-		svc.AddCard,
-		connect.WithSchema(mTGRPCMethods.ByName("AddCard")),
-		connect.WithHandlerOptions(opts...),
-	)
 	mTGRPCGetCardHandler := connect.NewUnaryHandler(
 		MTGRPCGetCardProcedure,
 		svc.GetCard,
@@ -180,8 +158,6 @@ func NewMTGRPCHandler(svc MTGRPCHandler, opts ...connect.HandlerOption) (string,
 	)
 	return "/cards.MTGRPC/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case MTGRPCAddCardProcedure:
-			mTGRPCAddCardHandler.ServeHTTP(w, r)
 		case MTGRPCGetCardProcedure:
 			mTGRPCGetCardHandler.ServeHTTP(w, r)
 		case MTGRPCSearchCardsProcedure:
@@ -198,10 +174,6 @@ func NewMTGRPCHandler(svc MTGRPCHandler, opts ...connect.HandlerOption) (string,
 
 // UnimplementedMTGRPCHandler returns CodeUnimplemented from all methods.
 type UnimplementedMTGRPCHandler struct{}
-
-func (UnimplementedMTGRPCHandler) AddCard(context.Context, *connect.Request[pb.AddCardRequest]) (*connect.Response[pb.AddCardResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("cards.MTGRPC.AddCard is not implemented"))
-}
 
 func (UnimplementedMTGRPCHandler) GetCard(context.Context, *connect.Request[pb.GetCardRequest]) (*connect.Response[pb.GetCardResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("cards.MTGRPC.GetCard is not implemented"))

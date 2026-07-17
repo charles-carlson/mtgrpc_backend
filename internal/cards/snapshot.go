@@ -4,6 +4,7 @@ import (
 	"backend_nonsense/internal/store"
 	"fmt"
 	"slices"
+	"strings"
 )
 
 // future builds might be required for decklist service,
@@ -35,6 +36,8 @@ func buildSnapshot(cards []store.Card) *snapshot {
 		flattenSets = append(flattenSets, key)
 	}
 	slices.Sort(flattenSets)
+	//Sort cards by their key
+	slices.SortFunc(cards, func(a, b store.Card) int { return strings.Compare(keyOf(a), keyOf(b)) })
 	//return pointer of snapshot
 	return &snapshot{
 		allCards: cards,

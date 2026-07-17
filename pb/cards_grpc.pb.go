@@ -19,7 +19,6 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	MTGRPC_AddCard_FullMethodName     = "/cards.MTGRPC/AddCard"
 	MTGRPC_GetCard_FullMethodName     = "/cards.MTGRPC/GetCard"
 	MTGRPC_SearchCards_FullMethodName = "/cards.MTGRPC/SearchCards"
 	MTGRPC_ListCards_FullMethodName   = "/cards.MTGRPC/ListCards"
@@ -30,7 +29,6 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MTGRPCClient interface {
-	AddCard(ctx context.Context, in *AddCardRequest, opts ...grpc.CallOption) (*AddCardResponse, error)
 	GetCard(ctx context.Context, in *GetCardRequest, opts ...grpc.CallOption) (*GetCardResponse, error)
 	SearchCards(ctx context.Context, in *SearchCardsRequest, opts ...grpc.CallOption) (*SearchCardsResponse, error)
 	ListCards(ctx context.Context, in *ListCardsRequest, opts ...grpc.CallOption) (*ListCardsResponse, error)
@@ -43,16 +41,6 @@ type mTGRPCClient struct {
 
 func NewMTGRPCClient(cc grpc.ClientConnInterface) MTGRPCClient {
 	return &mTGRPCClient{cc}
-}
-
-func (c *mTGRPCClient) AddCard(ctx context.Context, in *AddCardRequest, opts ...grpc.CallOption) (*AddCardResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AddCardResponse)
-	err := c.cc.Invoke(ctx, MTGRPC_AddCard_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *mTGRPCClient) GetCard(ctx context.Context, in *GetCardRequest, opts ...grpc.CallOption) (*GetCardResponse, error) {
@@ -99,7 +87,6 @@ func (c *mTGRPCClient) ListSets(ctx context.Context, in *ListSetsRequest, opts .
 // All implementations must embed UnimplementedMTGRPCServer
 // for forward compatibility.
 type MTGRPCServer interface {
-	AddCard(context.Context, *AddCardRequest) (*AddCardResponse, error)
 	GetCard(context.Context, *GetCardRequest) (*GetCardResponse, error)
 	SearchCards(context.Context, *SearchCardsRequest) (*SearchCardsResponse, error)
 	ListCards(context.Context, *ListCardsRequest) (*ListCardsResponse, error)
@@ -114,9 +101,6 @@ type MTGRPCServer interface {
 // pointer dereference when methods are called.
 type UnimplementedMTGRPCServer struct{}
 
-func (UnimplementedMTGRPCServer) AddCard(context.Context, *AddCardRequest) (*AddCardResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method AddCard not implemented")
-}
 func (UnimplementedMTGRPCServer) GetCard(context.Context, *GetCardRequest) (*GetCardResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetCard not implemented")
 }
@@ -148,24 +132,6 @@ func RegisterMTGRPCServer(s grpc.ServiceRegistrar, srv MTGRPCServer) {
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&MTGRPC_ServiceDesc, srv)
-}
-
-func _MTGRPC_AddCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddCardRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MTGRPCServer).AddCard(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: MTGRPC_AddCard_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MTGRPCServer).AddCard(ctx, req.(*AddCardRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _MTGRPC_GetCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -247,10 +213,6 @@ var MTGRPC_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "cards.MTGRPC",
 	HandlerType: (*MTGRPCServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "AddCard",
-			Handler:    _MTGRPC_AddCard_Handler,
-		},
 		{
 			MethodName: "GetCard",
 			Handler:    _MTGRPC_GetCard_Handler,

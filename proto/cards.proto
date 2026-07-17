@@ -5,7 +5,6 @@ package cards;
 option go_package = "backend_nonsense/pb";
 
 service MTGRPC {
-    rpc AddCard(AddCardRequest)             returns (AddCardResponse){}
     rpc GetCard(GetCardRequest)             returns (GetCardResponse){}
     rpc SearchCards(SearchCardsRequest)     returns (SearchCardsResponse){}
     rpc ListCards(ListCardsRequest)         returns (ListCardsResponse){}
@@ -30,18 +29,6 @@ message Card {
     Prices prices  = 6;
     repeated string colors = 7;
     string rarity = 8;
-}
-
-// AddCard
-message AddCardRequest {
-    string name   = 1;
-    string set    = 2;
-    string number = 3;
-    int32  count  = 4;
-}
-
-message AddCardResponse {
-    Card card = 1;
 }
 
 // GetCard — exact lookup by name + set + number

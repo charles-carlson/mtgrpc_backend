@@ -78,6 +78,9 @@ func main() {
 		}
 		log.Println("prices refreshed")
 	}
+	if err := cardSvc.Reload(ctx); err != nil {
+		log.Fatalf("reload: %v", err)
+	}
 	limiter := rate.NewLimiter(rate.Every(time.Second), 10)
 	logging := connect.UnaryInterceptorFunc(func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {

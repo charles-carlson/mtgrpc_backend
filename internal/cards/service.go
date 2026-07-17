@@ -2,20 +2,38 @@ package cards
 
 import (
 	"context"
+	"encoding/base64"
 	"log"
+	"slices"
+	"sort"
+	"strings"
 
 	"backend_nonsense/internal/scryfall"
 	"backend_nonsense/internal/store"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
+
+var errLoadingSnapshot = status.Errorf(codes.Internal, "Unable to load current snapshot from cache")
 
 // Service handles card operations shared across ingest and manual entry.
 type Service struct {
 	store    *store.Store
 	scryfall *scryfall.Client
+	cache    cardsCache
 }
 
 func NewService(s *store.Store, sc *scryfall.Client) *Service {
 	return &Service{store: s, scryfall: sc}
+}
+func (svc *Service) Reload(ctx context.Context) error {
+	if err := svc.cache.reload(ctx, svc.store.ScanAllCards); err != nil {
+		return err
+	}
+	snap := svc.cache.current()
+	log.Printf("snapshot loaded: %d cards, %d sets", len(snap.allCards), len(snap.sets))
+	return nil
 }
 
 // Refreshing prices for DynamoDb
@@ -71,24 +89,114 @@ func (svc *Service) RemoveCard(ctx context.Context, card store.Card) error {
 
 // GetCard returns a specific card by name, set, and number.
 func (svc *Service) GetCard(ctx context.Context, name, set, number string) (*store.Card, error) {
-	return svc.store.GetCard(ctx, name, set, number)
+	snap := svc.cache.current()
+	if snap == nil {
+		return nil, errLoadingSnapshot
+	}
+	c, ok := snap.byKey[keyOf(store.Card{Name: name, Set: set, Number: number})]
+	if !ok {
+		return nil, nil // miss: nil card, no error (server maps to an empty response)
+	}
+	return &c, nil
 }
 
 // ListCards returns all cards in the collection.
 func (svc *Service) ListCards(ctx context.Context, pageSize int32, pageToken string) ([]store.Card, string, error) {
-	return svc.store.ScanAll(ctx, pageSize, pageToken)
+	snap := svc.cache.current()
+	if snap == nil {
+		return nil, "", errLoadingSnapshot
+	}
+	return paginate(snap.allCards, pageSize, pageToken)
 }
 
 // SearchCards queries the collection with optional name, set, and color filters.
 func (svc *Service) SearchCards(ctx context.Context, name, set string, colors []string, rarity []string, pageSize int32, pageToken string) ([]store.Card, string, error) {
-	return svc.store.Search(ctx, store.SearchFilter{
+	snap := svc.cache.current()
+	if snap == nil {
+		return nil, "", errLoadingSnapshot
+	}
+	filtered := buildFilteredCards(snap.allCards, store.SearchFilter{
 		Name:   name,
 		Set:    set,
 		Colors: colors,
 		Rarity: rarity,
-	}, pageSize, pageToken)
+	})
+	return paginate(filtered, pageSize, pageToken)
 }
 
 func (svc *Service) ListSets(ctx context.Context) ([]string, error) {
-	return svc.store.ListSets(ctx)
+	snap := svc.cache.current()
+	if snap == nil {
+		return nil, errLoadingSnapshot
+	}
+	return snap.sets, nil
+}
+
+// First index whose key is strictly greater than the cursor.
+// sort.Search needs a monotonic predicate — true for all keys past the cursor.
+func paginate(sorted []store.Card, pageSize int32, token string) ([]store.Card, string, error) {
+	cursor, err := decodeCursor(token)
+	if err != nil {
+		return nil, "", err
+	}
+	start := sort.Search(len(sorted), func(i int) bool {
+		return keyOf(sorted[i]) > cursor
+	})
+	end := len(sorted)
+	if pageSize > 0 && start+int(pageSize) < end {
+		end = start + int(pageSize)
+	}
+	page := sorted[start:end:end] //3 index cap
+	next := ""
+	if end < len(sorted) {
+		//next page key is at the last value to be returned in the page
+		next = encodeCursor(keyOf(sorted[end-1]))
+	}
+	return page, next, nil
+}
+func encodeCursor(key string) string { return base64.StdEncoding.EncodeToString([]byte(key)) }
+
+func decodeCursor(token string) (string, error) {
+	if token == "" {
+		return "", nil
+	}
+	b, err := base64.StdEncoding.DecodeString(token)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
+
+func buildFilteredCards(cards []store.Card, filter store.SearchFilter) []store.Card {
+	filtered := make([]store.Card, 0, len(cards))
+	for _, card := range cards {
+		if matches(card, filter) {
+			filtered = append(filtered, card)
+		}
+	}
+	return filtered
+}
+func matches(c store.Card, f store.SearchFilter) bool {
+	if f.Name != "" && !strings.Contains(c.Name, f.Name) {
+		return false // fails the name group
+	}
+	if f.Set != "" && c.Set != f.Set {
+		return false // fails the set group
+	}
+	if len(f.Rarity) > 0 && !slices.Contains(f.Rarity, c.Rarity) {
+		return false // fails the rarity group (OR handled by Contains)
+	}
+	if len(f.Colors) > 0 && !hasAnyColor(c.Colors, f.Colors) {
+		return false // fails the color group
+	}
+	return true // passed every active group
+}
+
+func hasAnyColor(cardColors, want []string) bool {
+	for _, w := range want {
+		if slices.Contains(cardColors, w) {
+			return true // OR within the color group
+		}
+	}
+	return false
 }
