@@ -3,19 +3,10 @@ package cards
 import (
 	"context"
 	"log"
-	"time"
 
 	"backend_nonsense/internal/scryfall"
 	"backend_nonsense/internal/store"
 )
-
-// future builds might be required for decklist service,
-type snapshot struct {
-	allCards []store.Card //all cards
-	byKey    []store.Card //name->set->number
-	sets     []string     // list of sets
-	builtAt  time.Time
-}
 
 // Service handles card operations shared across ingest and manual entry.
 type Service struct {
