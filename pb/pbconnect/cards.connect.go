@@ -41,6 +41,8 @@ const (
 	MTGRPCListCardsProcedure = "/cards.MTGRPC/ListCards"
 	// MTGRPCListSetsProcedure is the fully-qualified name of the MTGRPC's ListSets RPC.
 	MTGRPCListSetsProcedure = "/cards.MTGRPC/ListSets"
+	// MTGRPCGetSetInfoProcedure is the fully-qualified name of the MTGRPC's GetSetInfo RPC.
+	MTGRPCGetSetInfoProcedure = "/cards.MTGRPC/GetSetInfo"
 )
 
 // MTGRPCClient is a client for the cards.MTGRPC service.
@@ -49,6 +51,7 @@ type MTGRPCClient interface {
 	SearchCards(context.Context, *connect.Request[pb.SearchCardsRequest]) (*connect.Response[pb.SearchCardsResponse], error)
 	ListCards(context.Context, *connect.Request[pb.ListCardsRequest]) (*connect.Response[pb.ListCardsResponse], error)
 	ListSets(context.Context, *connect.Request[pb.ListSetsRequest]) (*connect.Response[pb.ListSetsResponse], error)
+	GetSetInfo(context.Context, *connect.Request[pb.GetSetInfoRequest]) (*connect.Response[pb.GetSetInfoResponse], error)
 }
 
 // NewMTGRPCClient constructs a client for the cards.MTGRPC service. By default, it uses the Connect
@@ -86,6 +89,12 @@ func NewMTGRPCClient(httpClient connect.HTTPClient, baseURL string, opts ...conn
 			connect.WithSchema(mTGRPCMethods.ByName("ListSets")),
 			connect.WithClientOptions(opts...),
 		),
+		getSetInfo: connect.NewClient[pb.GetSetInfoRequest, pb.GetSetInfoResponse](
+			httpClient,
+			baseURL+MTGRPCGetSetInfoProcedure,
+			connect.WithSchema(mTGRPCMethods.ByName("GetSetInfo")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -95,6 +104,7 @@ type mTGRPCClient struct {
 	searchCards *connect.Client[pb.SearchCardsRequest, pb.SearchCardsResponse]
 	listCards   *connect.Client[pb.ListCardsRequest, pb.ListCardsResponse]
 	listSets    *connect.Client[pb.ListSetsRequest, pb.ListSetsResponse]
+	getSetInfo  *connect.Client[pb.GetSetInfoRequest, pb.GetSetInfoResponse]
 }
 
 // GetCard calls cards.MTGRPC.GetCard.
@@ -117,12 +127,18 @@ func (c *mTGRPCClient) ListSets(ctx context.Context, req *connect.Request[pb.Lis
 	return c.listSets.CallUnary(ctx, req)
 }
 
+// GetSetInfo calls cards.MTGRPC.GetSetInfo.
+func (c *mTGRPCClient) GetSetInfo(ctx context.Context, req *connect.Request[pb.GetSetInfoRequest]) (*connect.Response[pb.GetSetInfoResponse], error) {
+	return c.getSetInfo.CallUnary(ctx, req)
+}
+
 // MTGRPCHandler is an implementation of the cards.MTGRPC service.
 type MTGRPCHandler interface {
 	GetCard(context.Context, *connect.Request[pb.GetCardRequest]) (*connect.Response[pb.GetCardResponse], error)
 	SearchCards(context.Context, *connect.Request[pb.SearchCardsRequest]) (*connect.Response[pb.SearchCardsResponse], error)
 	ListCards(context.Context, *connect.Request[pb.ListCardsRequest]) (*connect.Response[pb.ListCardsResponse], error)
 	ListSets(context.Context, *connect.Request[pb.ListSetsRequest]) (*connect.Response[pb.ListSetsResponse], error)
+	GetSetInfo(context.Context, *connect.Request[pb.GetSetInfoRequest]) (*connect.Response[pb.GetSetInfoResponse], error)
 }
 
 // NewMTGRPCHandler builds an HTTP handler from the service implementation. It returns the path on
@@ -156,6 +172,12 @@ func NewMTGRPCHandler(svc MTGRPCHandler, opts ...connect.HandlerOption) (string,
 		connect.WithSchema(mTGRPCMethods.ByName("ListSets")),
 		connect.WithHandlerOptions(opts...),
 	)
+	mTGRPCGetSetInfoHandler := connect.NewUnaryHandler(
+		MTGRPCGetSetInfoProcedure,
+		svc.GetSetInfo,
+		connect.WithSchema(mTGRPCMethods.ByName("GetSetInfo")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/cards.MTGRPC/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case MTGRPCGetCardProcedure:
@@ -166,6 +188,8 @@ func NewMTGRPCHandler(svc MTGRPCHandler, opts ...connect.HandlerOption) (string,
 			mTGRPCListCardsHandler.ServeHTTP(w, r)
 		case MTGRPCListSetsProcedure:
 			mTGRPCListSetsHandler.ServeHTTP(w, r)
+		case MTGRPCGetSetInfoProcedure:
+			mTGRPCGetSetInfoHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -189,4 +213,8 @@ func (UnimplementedMTGRPCHandler) ListCards(context.Context, *connect.Request[pb
 
 func (UnimplementedMTGRPCHandler) ListSets(context.Context, *connect.Request[pb.ListSetsRequest]) (*connect.Response[pb.ListSetsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("cards.MTGRPC.ListSets is not implemented"))
+}
+
+func (UnimplementedMTGRPCHandler) GetSetInfo(context.Context, *connect.Request[pb.GetSetInfoRequest]) (*connect.Response[pb.GetSetInfoResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("cards.MTGRPC.GetSetInfo is not implemented"))
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"backend_nonsense/internal/cards"
 	"backend_nonsense/internal/store"
 	"backend_nonsense/pb"
 
@@ -37,12 +38,28 @@ func toProtoCards(cs []store.Card) []*pb.Card {
 	}
 	return out
 }
+func toProtoSetCompletion(s cards.SetCompletion) *pb.SetCompletion {
+	return &pb.SetCompletion{
+		Set:   s.Set,
+		Owned: int32(s.Owned), // proto ints are int32; yours are int
+		Total: int32(s.Total),
+	}
+}
+
+func toProtoSetCompletions(cs []cards.SetCompletion) []*pb.SetCompletion {
+	out := make([]*pb.SetCompletion, len(cs))
+	for i, c := range cs {
+		out[i] = toProtoSetCompletion(c)
+	}
+	return out
+}
 
 type cardService interface {
 	GetCard(ctx context.Context, name, set, number string) (*store.Card, error)
 	SearchCards(ctx context.Context, name, set string, colors []string, rarity []string, pageSize int32, pageToken string) ([]store.Card, string, error)
 	ListCards(ctx context.Context, pageSize int32, pageToken string) ([]store.Card, string, error)
 	ListSets(ctx context.Context) ([]string, error)
+	GetSetInfo(ctx context.Context) ([]cards.SetCompletion, error)
 }
 
 type Server struct {
@@ -56,6 +73,7 @@ var (
 	errQueryCardsInternal = status.Errorf(codes.Internal, "Unable to query cards")
 	errListCards          = status.Errorf(codes.Internal, "Unable to fetch collection")
 	errListSets           = status.Errorf(codes.Internal, "Unable to retrieve set information")
+	errGetSetInfo         = status.Errorf(codes.Internal, "unable to retrieve set completion data")
 )
 
 func New(svc cardService) *Server {
@@ -102,4 +120,12 @@ func (s *Server) ListSets(ctx context.Context, req *pb.ListSetsRequest) (*pb.Lis
 		return nil, errListSets
 	}
 	return &pb.ListSetsResponse{Sets: results}, nil
+}
+
+func (s *Server) GetSetInfo(ctx context.Context, req *pb.GetSetInfoRequest) (*pb.GetSetInfoResponse, error) {
+	results, err := s.cards.GetSetInfo(ctx)
+	if err != nil {
+		return nil, errGetSetInfo
+	}
+	return &pb.GetSetInfoResponse{Sets: toProtoSetCompletions(results)}, nil
 }

@@ -6,6 +6,7 @@ import (
 	"log"
 	"slices"
 	"sort"
+	"strconv"
 	"strings"
 
 	"backend_nonsense/internal/scryfall"
@@ -17,11 +18,19 @@ import (
 
 var errLoadingSnapshot = status.Errorf(codes.Internal, "Unable to load current snapshot from cache")
 
+type SetCompletion struct {
+	ImageURI string
+	Set      string
+	Owned    int
+	Total    int // printed_size; 0 = unknown (Scryfall data missing), using nil pointer for print_size in snapshot
+}
+
 // Service handles card operations shared across ingest and manual entry.
 type Service struct {
 	store    *store.Store
 	scryfall *scryfall.Client
 	cache    cardsCache
+	setc     setCache
 }
 
 func NewService(s *store.Store, sc *scryfall.Client) *Service {
@@ -34,6 +43,61 @@ func (svc *Service) Reload(ctx context.Context) error {
 	snap := svc.cache.current()
 	log.Printf("snapshot loaded: %d cards, %d sets", len(snap.allCards), len(snap.sets))
 	return nil
+}
+
+func (svc *Service) ReloadSetInfo(ctx context.Context) error {
+	if err := svc.setc.reload(ctx, svc.scryfall.GetSetsInfo); err != nil {
+		return err
+	}
+	setmd := svc.setc.current()
+	log.Printf("set metadata loaded: %d sets", len(*setmd))
+	return nil
+}
+
+func (svc *Service) GetSetInfo(context.Context) ([]SetCompletion, error) {
+	snap := svc.cache.current()
+	if snap == nil {
+		return nil, errLoadingSnapshot
+	}
+	setmd := svc.setc.current()
+	// may be nil, but will let it be non fatal
+	// set code -> collector number -> true/false
+	owned := make(map[string]map[int]struct{})
+	for _, c := range snap.allCards {
+		n, err := strconv.Atoi(c.Number)
+		if err != nil {
+			continue
+		}
+		if owned[c.Set] == nil {
+			owned[c.Set] = make(map[int]struct{})
+		}
+		owned[c.Set][n] = struct{}{}
+	}
+	var out []SetCompletion
+	//Iterate through each set code in snapshot, sets are already sorted, output result will be an array sorted with set results
+	for _, code := range snap.sets {
+		//set the total to 0 before counting printed size of the set
+		total := 0
+		imageURI := ""
+		//if scryfall data does not exist silently fail
+		if setmd != nil {
+			//if not, check if code exists in the map, and set total to Printed Size if exists in set info
+			if info, ok := (*setmd)[code]; ok && info.PrintedSize != nil {
+				total = *info.PrintedSize
+				imageURI = info.IconSVGUri
+			}
+		}
+		have := 0
+		//count cards in collection that exist
+		for n := range owned[code] {
+			if total == 0 || (n >= 1 && n <= total) {
+				have++
+			}
+		}
+		//append result
+		out = append(out, SetCompletion{ImageURI: imageURI, Set: code, Owned: have, Total: total})
+	}
+	return out, nil
 }
 
 // Refreshing prices for DynamoDb

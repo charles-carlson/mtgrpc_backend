@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"backend_nonsense/internal/cards"
 	"backend_nonsense/internal/store"
 	"backend_nonsense/pb"
 
@@ -20,10 +21,12 @@ type stubCardService struct {
 	searchCards    []store.Card
 	listCards      []store.Card
 	listSets       []string
+	getSetInfo     []cards.SetCompletion
 	getErr         error
 	searchErr      error
 	listErr        error
 	listSetsErr    error
+	getSetInfoErr  error
 }
 
 func (s *stubCardService) GetCard(_ context.Context, _, _, _ string) (*store.Card, error) {
@@ -37,6 +40,9 @@ func (s *stubCardService) ListCards(_ context.Context, _ int32, _ string) ([]sto
 }
 func (s *stubCardService) ListSets(_ context.Context) ([]string, error) {
 	return s.listSets, s.listSetsErr
+}
+func (s *stubCardService) GetSetInfo(_ context.Context) ([]cards.SetCompletion, error) {
+	return s.getSetInfo, s.getSetInfoErr
 }
 func TestSearchCards_Success(t *testing.T) {
 	srv := New(&stubCardService{
@@ -154,6 +160,44 @@ func TestGetCard_InternalRequest(t *testing.T) {
 	_, err := srv.GetCard(context.Background(), &pb.GetCardRequest{
 		Name: "Sol Ring", Set: "C21", Number: "263",
 	})
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if status.Code(err) != codes.Internal {
+		t.Errorf("got code %v, want %v", status.Code(err), codes.Internal)
+	}
+}
+
+func TestGetSetInfo_Success(t *testing.T) {
+	srv := New(&stubCardService{
+		getSetInfo: []cards.SetCompletion{
+			{Set: "C21", Owned: 2, Total: 3},
+			{Set: "MH2", Owned: 5, Total: 10},
+		},
+	})
+
+	resp, err := srv.GetSetInfo(context.Background(), &pb.GetSetInfoRequest{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(resp.Sets) != 2 {
+		t.Errorf("got %d sets, want 2", len(resp.Sets))
+	}
+	if resp.Sets[0].Set != "C21" {
+		t.Errorf("got set %q, want %q", resp.Sets[0].Set, "C21")
+	}
+	if resp.Sets[0].Owned != 2 {
+		t.Errorf("got owned %d, want 2", resp.Sets[0].Owned)
+	}
+	if resp.Sets[1].Total != 10 {
+		t.Errorf("got total %d, want 10", resp.Sets[1].Total)
+	}
+}
+
+func TestGetSetInfo_InternalRequest(t *testing.T) {
+	srv := New(&stubCardService{getSetInfoErr: errors.New("scryfall down")})
+
+	_, err := srv.GetSetInfo(context.Background(), &pb.GetSetInfoRequest{})
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}

@@ -47,7 +47,22 @@ type CardInfo struct {
 	Colors   []string
 	Rarity   string
 }
-
+type SetList struct {
+	Data     []SetInfo `json:"data"`
+	HasMore  bool      `json:"has_more"`  // only meaningful on /cards/search
+	NextPage string    `json:"next_page"` // ditto
+}
+type SetInfo struct {
+	Name        string `json:"name"`
+	Code        string `json:"code"`
+	CardCount   int    `json:"card_count"`
+	PrintedSize *int   `json:"printed_size"`
+	IconSVGUri  string `json:"icon_svg_uri"`
+	Digital     bool   `json:"digital"`
+	SetType     string `json:"set_type"`
+	NonfoilOnly bool   `json:"nonfoil_only"`
+	FoilOnly    bool   `json:"foil_only"`
+}
 type cardResponse struct {
 	ImageURIs *imageURIs `json:"image_uris"`
 	CardFaces []struct {
@@ -105,4 +120,30 @@ func (c *Client) GetCardInfo(ctx context.Context, set, number string) (*CardInfo
 		Colors:   card.Colors,
 		Rarity:   card.Rarity,
 	}, nil
+}
+func (c *Client) GetSetsInfo(ctx context.Context) (*map[string]SetInfo, error) {
+	<-c.limiter
+	url := fmt.Sprintf("%s/sets", baseURL)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accept", "application/json")
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("scryfall sets: status %d", resp.StatusCode)
+	}
+	var setList SetList
+	if err := json.NewDecoder(resp.Body).Decode(&setList); err != nil {
+		return nil, err
+	}
+	m := make(map[string]SetInfo, len(setList.Data))
+	for _, s := range setList.Data {
+		m[s.Code] = s
+	}
+	return &m, nil
 }

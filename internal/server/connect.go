@@ -71,3 +71,10 @@ func (a *ConnectAdapter) ListSets(ctx context.Context, req *connect.Request[pb.L
 	}
 	return connect.NewResponse(resp), nil
 }
+func (a *ConnectAdapter) GetSetInfo(ctx context.Context, req *connect.Request[pb.GetSetInfoRequest]) (*connect.Response[pb.GetSetInfoResponse], error) {
+	resp, err := a.impl.GetSetInfo(ctx, req.Msg)
+	if err != nil {
+		return nil, toConnectErr(err)
+	}
+	return connect.NewResponse(resp), nil
+}

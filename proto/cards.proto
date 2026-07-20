@@ -9,6 +9,7 @@ service MTGRPC {
     rpc SearchCards(SearchCardsRequest)     returns (SearchCardsResponse){}
     rpc ListCards(ListCardsRequest)         returns (ListCardsResponse){}
     rpc ListSets(ListSetsRequest)           returns(ListSetsResponse){}
+    rpc GetSetInfo(GetSetInfoRequest)       returns(GetSetInfoResponse){}
 }
 
 //Prices message
@@ -30,7 +31,16 @@ message Card {
     repeated string colors = 7;
     string rarity = 8;
 }
-
+message SetCompletion {
+	string image_uri = 1;
+	string set = 2;
+	int32 owned = 3;
+	int32 total = 4;
+}
+message GetSetInfoRequest{}
+message GetSetInfoResponse{
+    repeated SetCompletion sets = 1;
+}
 // GetCard — exact lookup by name + set + number
 message GetCardRequest {
     string name   = 1;
