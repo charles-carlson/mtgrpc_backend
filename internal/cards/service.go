@@ -81,10 +81,13 @@ func (svc *Service) GetSetInfo(context.Context) ([]SetCompletion, error) {
 		imageURI := ""
 		//if scryfall data does not exist silently fail
 		if setmd != nil {
-			//if not, check if code exists in the map, and set total to Printed Size if exists in set info
-			if info, ok := (*setmd)[code]; ok && info.PrintedSize != nil {
-				total = *info.PrintedSize
+			//icon is available whenever the set exists in metadata; total only when printed_size is set
+			if info, ok := (*setmd)[strings.ToLower(code)]; ok {
 				imageURI = info.IconSVGUri
+				log.Println(imageURI)
+				if info.PrintedSize != nil {
+					total = *info.PrintedSize
+				}
 			}
 		}
 		have := 0

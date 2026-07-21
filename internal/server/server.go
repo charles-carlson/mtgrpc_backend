@@ -40,9 +40,10 @@ func toProtoCards(cs []store.Card) []*pb.Card {
 }
 func toProtoSetCompletion(s cards.SetCompletion) *pb.SetCompletion {
 	return &pb.SetCompletion{
-		Set:   s.Set,
-		Owned: int32(s.Owned), // proto ints are int32; yours are int
-		Total: int32(s.Total),
+		ImageUri: s.ImageURI,
+		Set:      s.Set,
+		Owned:    int32(s.Owned), // proto ints are int32; yours are int
+		Total:    int32(s.Total),
 	}
 }
 
