@@ -74,21 +74,30 @@ func (svc *Service) GetSetInfo(context.Context) ([]SetCompletion, error) {
 		owned[c.Set][n] = struct{}{}
 	}
 	var out []SetCompletion
+	var completableSetTypes = map[string]struct{}{
+		"expansion": {},
+		"core":      {},
+	}
 	//Iterate through each set code in snapshot, sets are already sorted, output result will be an array sorted with set results
 	for _, code := range snap.sets {
+		if setmd == nil {
+			continue
+		}
+		info, ok := (*setmd)[strings.ToLower(code)] // ToLower = your case fix
+		if !ok {
+			continue // set not in Scryfall's data → skip
+		}
+		if _, completable := completableSetTypes[info.SetType]; !completable {
+			continue // ← the gate: drop commander/masters/etc.
+		}
 		//set the total to 0 before counting printed size of the set
 		total := 0
-		imageURI := ""
 		//if scryfall data does not exist silently fail
-		if setmd != nil {
-			//icon is available whenever the set exists in metadata; total only when printed_size is set
-			if info, ok := (*setmd)[strings.ToLower(code)]; ok {
-				imageURI = info.IconSVGUri
-				log.Println(imageURI)
-				if info.PrintedSize != nil {
-					total = *info.PrintedSize
-				}
-			}
+		//icon is available whenever the set exists in metadata; total only when printed_size is set
+		if info.PrintedSize != nil {
+			total = *info.PrintedSize
+		} else {
+			total = info.CardCount
 		}
 		have := 0
 		//count cards in collection that exist
@@ -98,7 +107,8 @@ func (svc *Service) GetSetInfo(context.Context) ([]SetCompletion, error) {
 			}
 		}
 		//append result
-		out = append(out, SetCompletion{ImageURI: imageURI, Set: code, Owned: have, Total: total})
+		out = append(out, SetCompletion{ImageURI: info.IconSVGUri, Set: code, Owned: have, Total: total})
+		log.Printf("Set Completion for %s: owned is %d and total is %d", code, have, total)
 	}
 	return out, nil
 }
