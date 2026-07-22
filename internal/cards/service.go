@@ -1,6 +1,7 @@
 package cards
 
 import (
+	"cmp"
 	"context"
 	"encoding/base64"
 	"log"
@@ -18,6 +19,32 @@ import (
 
 var errLoadingSnapshot = status.Errorf(codes.Internal, "Unable to load current snapshot from cache")
 
+type ColorDistribution struct {
+	White     int
+	Blue      int
+	Red       int
+	Green     int
+	Black     int
+	Colorless int
+}
+
+type RarityDistribution struct {
+	Common   int
+	Uncommon int
+	Rare     int
+	Mythic   int
+	Special  int
+	Bonus    int
+}
+
+type CollectionStats struct {
+	TotalNetWorth float64
+	TopKCards     []store.Card
+	RarityDist    RarityDistribution
+	ColorDist     ColorDistribution
+	TypeDist      map[string]int
+	SubTypeDist   map[string]map[string]int
+}
 type SetCompletion struct {
 	ImageURI string
 	Set      string
@@ -53,7 +80,109 @@ func (svc *Service) ReloadSetInfo(ctx context.Context) error {
 	log.Printf("set metadata loaded: %d sets", len(*setmd))
 	return nil
 }
+func CheckPrice(finish string, prices store.Prices) string {
+	if finish == "foil" {
+		return prices.USDFoil
+	} else if finish == "etched" {
+		return prices.USDEtched
+	} else {
+		return prices.USD
+	}
+}
 
+// WIP, need to set up finish type to ingestion pipeline
+func (svc *Service) GetStats(context.Context) (*CollectionStats, error) {
+	snap := svc.cache.current()
+	if snap == nil {
+		return nil, errLoadingSnapshot
+	}
+	collection := make([]store.Card, len(snap.allCards))
+	copy(collection, snap.allCards)
+	//Sort cards in decreasing order of cards worth the most value
+	// Can grab the first five cards to show most expensive
+	slices.SortFunc(collection, func(c1, c2 store.Card) int {
+		p1, _ := strconv.ParseFloat(CheckPrice(c1.Finish, c1.Prices), 64)
+		p2, _ := strconv.ParseFloat(CheckPrice(c2.Finish, c2.Prices), 64)
+		return cmp.Compare(p2, p1)
+	})
+	totalLiquid := float64(0)
+	var rareDist RarityDistribution
+	var colorDist ColorDistribution
+	typeDist := make(map[string]int)
+	subTypeDist := make(map[string]map[string]int)
+	for _, card := range collection {
+		//Retrieve correct price of card based on finish
+		value := CheckPrice(card.Finish, card.Prices)
+		price, err := strconv.ParseFloat(value, 64)
+		if err != nil {
+			return nil, err
+		}
+		totalLiquid += price
+		//Rarity Dis
+		switch card.Rarity {
+		case "common":
+			rareDist.Common++
+		case "uncommon":
+			rareDist.Uncommon++
+		case "rare":
+			rareDist.Rare++
+		case "mythic":
+			rareDist.Mythic++
+		case "special":
+			rareDist.Special++
+		case "bonus":
+			rareDist.Bonus++
+		}
+		n := card.Count
+		if len(card.Colors) == 0 {
+			colorDist.Colorless += n // empty array = colorless (lands, most artifacts)
+		} else {
+			for _, col := range card.Colors {
+				switch col {
+				case "W":
+					colorDist.White += n
+				case "U":
+					colorDist.Blue += n
+				case "B":
+					colorDist.Black += n
+				case "R":
+					colorDist.Red += n
+				case "G":
+					colorDist.Green += n
+				}
+			}
+		}
+
+		//type_line looks like type type type -- subtype subtype subtype...
+		// multiple types if em dash exists
+		parts := strings.SplitN(card.TypeLine, "\u2014", 2)
+		cardTypes := strings.Fields(parts[0])
+		var subTypes []string
+		if len(parts) == 2 {
+			subTypes = strings.Fields(parts[1])
+		}
+		for _, cType := range cardTypes {
+			typeDist[cType]++
+			if len(subTypes) > 0 {
+				for _, sType := range subTypes {
+					if subTypeDist[cType] == nil {
+						subTypeDist[cType] = make(map[string]int)
+					}
+					subTypeDist[cType][sType]++
+				}
+			}
+		}
+	}
+	k := min(5, len(collection))
+	return &CollectionStats{
+		ColorDist:     colorDist,
+		RarityDist:    rareDist,
+		TypeDist:      typeDist,
+		SubTypeDist:   subTypeDist,
+		TotalNetWorth: totalLiquid,
+		TopKCards:     collection[:k],
+	}, nil
+}
 func (svc *Service) GetSetInfo(context.Context) ([]SetCompletion, error) {
 	snap := svc.cache.current()
 	if snap == nil {
@@ -125,11 +254,13 @@ func (svc *Service) RefreshPrices(ctx context.Context) error {
 			log.Printf("warn: scryfall data for %q (%s/%s): %v", card.Name, card.Set, card.Number, err)
 		} else {
 			card.Prices = store.Prices{
-				USD:     info.Prices.USD,
-				USDFoil: info.Prices.USDFoil,
-				EUR:     info.Prices.EUR,
-				EURFoil: info.Prices.EURFoil,
-				TIX:     info.Prices.TIX,
+				USD:       info.Prices.USD,
+				USDFoil:   info.Prices.USDFoil,
+				EUR:       info.Prices.EUR,
+				EURFoil:   info.Prices.EURFoil,
+				TIX:       info.Prices.TIX,
+				USDEtched: info.Prices.USDEtched,
+				EUREtched: info.Prices.EUREtched,
 			}
 			err := svc.store.UpdatePrices(ctx, card)
 			if err != nil {
@@ -146,9 +277,13 @@ func (svc *Service) AddCard(ctx context.Context, card store.Card) error {
 	if err != nil {
 		log.Printf("warn: scryfall data for %q (%s/%s): %v", card.Name, card.Set, card.Number, err)
 	} else {
+		if card.Finish == "" {
+			card.Finish = "nonfoil"
+		}
 		card.ImageURL = info.ImageURL
 		card.Colors = info.Colors
 		card.Rarity = info.Rarity
+		card.TypeLine = info.TypeLine
 		card.Prices = store.Prices{
 			USD:     info.Prices.USD,
 			USDFoil: info.Prices.USDFoil,

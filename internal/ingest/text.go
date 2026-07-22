@@ -15,9 +15,11 @@ import (
 
 // RunFromText reads a plain-text export where each line is:
 //
-//	<quantity> <name> <set> <number>
+//	<quantity> <name> <set> <number> [finish]
 //
-// Name may contain spaces; set and number are always the last two tokens.
+// Name may contain spaces. The optional trailing finish (nonfoil/foil/etched)
+// is detected by value; set and number are the two tokens before it (or the
+// last two when no finish is given).
 func RunFromText(ctx context.Context, path string, svc *cards.Service) error {
 	f, err := os.Open(path)
 	if err != nil {
@@ -61,14 +63,27 @@ func parseLine(line string) (store.Card, error) {
 		return store.Card{}, fmt.Errorf("invalid quantity %q: %w", tokens[0], err)
 	}
 
-	number := tokens[len(tokens)-1]
-	set := tokens[len(tokens)-2]
-	name := strings.Join(tokens[1:len(tokens)-2], " ")
+	// optional trailing finish token; when present, set/number sit just before it.
+	end := len(tokens) // exclusive end of the set/number region
+	finish := "nonfoil"
+	if len(tokens) >= 5 && isFinish(tokens[end-1]) {
+		f, err := normalizeFinish(tokens[end-1])
+		if err != nil {
+			return store.Card{}, err
+		}
+		finish = f
+		end--
+	}
+
+	number := tokens[end-1]
+	set := tokens[end-2]
+	name := strings.Join(tokens[1:end-2], " ")
 
 	return store.Card{
 		Count:  count,
 		Name:   name,
 		Set:    set,
 		Number: number,
+		Finish: finish,
 	}, nil
 }

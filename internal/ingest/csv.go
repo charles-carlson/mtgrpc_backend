@@ -13,8 +13,9 @@ import (
 	"backend_nonsense/internal/store"
 )
 
-// RunFromCSV reads a CSV file with columns: quantity, name, set, number.
-// The first row is treated as a header and skipped.
+// RunFromCSV reads a CSV file with columns: quantity, name, set, number[, finish].
+// The finish column is optional (defaults to nonfoil). The first row is treated
+// as a header and skipped.
 func RunFromCSV(ctx context.Context, path string, svc *cards.Service) error {
 	f, err := os.Open(path)
 	if err != nil {
@@ -51,7 +52,7 @@ func RunFromCSV(ctx context.Context, path string, svc *cards.Service) error {
 
 func parseCSVRow(row []string) (store.Card, error) {
 	if len(row) < 4 {
-		return store.Card{}, fmt.Errorf("expected 4 columns, got %d", len(row))
+		return store.Card{}, fmt.Errorf("expected at least 4 columns, got %d", len(row))
 	}
 
 	count, err := strconv.Atoi(strings.TrimSpace(row[0]))
@@ -59,10 +60,20 @@ func parseCSVRow(row []string) (store.Card, error) {
 		return store.Card{}, fmt.Errorf("invalid quantity %q: %w", row[0], err)
 	}
 
+	finishRaw := ""
+	if len(row) >= 5 {
+		finishRaw = row[4]
+	}
+	finish, err := normalizeFinish(finishRaw)
+	if err != nil {
+		return store.Card{}, err
+	}
+
 	return store.Card{
 		Count:  count,
 		Name:   strings.TrimSpace(row[1]),
 		Set:    strings.TrimSpace(row[2]),
 		Number: strings.TrimSpace(row[3]),
+		Finish: finish,
 	}, nil
 }

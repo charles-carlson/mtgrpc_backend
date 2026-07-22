@@ -23,11 +23,13 @@ const TableName = "cards"
 
 // Prices holds Scryfall market prices. All values are strings (e.g. "0.15") or empty if unavailable.
 type Prices struct {
-	USD     string `json:"usd"      dynamodbav:"usd"`
-	USDFoil string `json:"usd_foil" dynamodbav:"usd_foil"`
-	EUR     string `json:"eur"      dynamodbav:"eur"`
-	EURFoil string `json:"eur_foil" dynamodbav:"eur_foil"`
-	TIX     string `json:"tix"      dynamodbav:"tix"`
+	USD       string `json:"usd"      dynamodbav:"usd"`
+	USDFoil   string `json:"usd_foil" dynamodbav:"usd_foil"`
+	EUR       string `json:"eur"      dynamodbav:"eur"`
+	EURFoil   string `json:"eur_foil" dynamodbav:"eur_foil"`
+	TIX       string `json:"tix"      dynamodbav:"tix"`
+	USDEtched string `json:"usd_etched" dynamodbav:"usd_etched"`
+	EUREtched string `json:"eur_etched" dynamodbav:"eur_etched"`
 }
 
 // Card mirrors the Manabox export shape.
@@ -41,10 +43,12 @@ type Card struct {
 	Prices   Prices   `json:"prices"    dynamodbav:"prices"`
 	Colors   []string `json:"colors"    dynamodbav:"colors"`
 	Rarity   string   `json:"rarity"    dynamodbav:"rarity"`
+	Finish   string   `json:"finish" dynamodbav:"finish"`
+	TypeLine string   `json:"type_line" dynamodbav:"type_line"`
 }
 
 func (c Card) sk() string {
-	return fmt.Sprintf("%s#%s", c.Set, c.Number)
+	return fmt.Sprintf("%s#%s#%s", c.Set, c.Number, c.Finish)
 }
 
 type Store struct {
@@ -145,12 +149,19 @@ func (s *Store) PutCard(ctx context.Context, card Card) error {
 	if err != nil {
 		return err
 	}
-
+	finish, err := attributevalue.Marshal(card.Finish)
+	if err != nil {
+		return err
+	}
+	typeLine, err := attributevalue.Marshal(card.TypeLine)
+	if err != nil {
+		return err
+	}
 	_, err = s.db.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName: aws.String(TableName),
 		Key:       key,
 		UpdateExpression: aws.String(
-			"ADD #count :delta SET #set = if_not_exists(#set, :set), #number = if_not_exists(#number, :number), image_url = if_not_exists(image_url, :image_url), prices = :prices, colors = :colors, rarity = :rarity",
+			"ADD #count :delta SET #set = if_not_exists(#set, :set), #number = if_not_exists(#number, :number), image_url = if_not_exists(image_url, :image_url), prices = :prices, colors = :colors, rarity = :rarity, finish = :finish, type_line = :type_line",
 		),
 		ExpressionAttributeNames: map[string]string{
 			"#count":  "count",
@@ -165,6 +176,8 @@ func (s *Store) PutCard(ctx context.Context, card Card) error {
 			":prices":    prices,
 			":colors":    colors,
 			":rarity":    rarity,
+			":finish":    finish,
+			":type_line": typeLine,
 		},
 	})
 	return err

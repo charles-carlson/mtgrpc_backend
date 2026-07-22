@@ -33,11 +33,13 @@ func New() *Client {
 
 // Prices holds Scryfall market prices. Values are decimal strings (e.g. "0.15") or empty if unavailable.
 type Prices struct {
-	USD     string `json:"usd"`
-	USDFoil string `json:"usd_foil"`
-	EUR     string `json:"eur"`
-	EURFoil string `json:"eur_foil"`
-	TIX     string `json:"tix"`
+	USD       string `json:"usd"`
+	USDFoil   string `json:"usd_foil"`
+	EUR       string `json:"eur"`
+	EURFoil   string `json:"eur_foil"`
+	TIX       string `json:"tix"`
+	USDEtched string `json:"usd_etched"`
+	EUREtched string `json:"eur_etched"`
 }
 
 // CardInfo holds the data fetched from Scryfall for a single printing.
@@ -46,6 +48,7 @@ type CardInfo struct {
 	Prices   Prices
 	Colors   []string
 	Rarity   string
+	TypeLine string
 }
 type SetList struct {
 	Data     []SetInfo `json:"data"`
@@ -68,9 +71,10 @@ type cardResponse struct {
 	CardFaces []struct {
 		ImageURIs *imageURIs `json:"image_uris"`
 	} `json:"card_faces"`
-	Prices Prices   `json:"prices"`
-	Colors []string `json:"colors"`
-	Rarity string   `json:"rarity"`
+	Prices   Prices   `json:"prices"`
+	Colors   []string `json:"colors"`
+	Rarity   string   `json:"rarity"`
+	TypeLine string   `json:"type_line"`
 }
 
 type imageURIs struct {
@@ -119,6 +123,7 @@ func (c *Client) GetCardInfo(ctx context.Context, set, number string) (*CardInfo
 		Prices:   card.Prices,
 		Colors:   card.Colors,
 		Rarity:   card.Rarity,
+		TypeLine: card.TypeLine,
 	}, nil
 }
 func (c *Client) GetSetsInfo(ctx context.Context) (*map[string]SetInfo, error) {

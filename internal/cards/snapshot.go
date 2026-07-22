@@ -15,7 +15,7 @@ type snapshot struct {
 }
 
 func keyOf(c store.Card) string {
-	return fmt.Sprintf("%s-%s-%s", c.Name, c.Set, c.Number)
+	return fmt.Sprintf("%s-%s-%s-%s", c.Name, c.Set, c.Number, c.Finish)
 }
 
 func buildSnapshot(cards []store.Card) *snapshot {
