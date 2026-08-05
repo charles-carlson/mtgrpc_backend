@@ -161,12 +161,13 @@ func (s *Store) PutCard(ctx context.Context, card Card) error {
 		TableName: aws.String(TableName),
 		Key:       key,
 		UpdateExpression: aws.String(
-			"ADD #count :delta SET #set = if_not_exists(#set, :set), #number = if_not_exists(#number, :number), image_url = if_not_exists(image_url, :image_url), prices = :prices, colors = :colors, rarity = :rarity, finish = :finish, type_line = :type_line",
+			"ADD #count :delta SET #set = if_not_exists(#set, :set), #number = if_not_exists(#number, :number), image_url = if_not_exists(image_url, :image_url), prices = :prices, colors = :colors, rarity = :rarity, #finish = :finish, type_line = :type_line",
 		),
 		ExpressionAttributeNames: map[string]string{
 			"#count":  "count",
 			"#set":    "set",
 			"#number": "number",
+			"#finish": "finish",
 		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":delta":     delta,

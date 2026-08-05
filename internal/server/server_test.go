@@ -22,11 +22,13 @@ type stubCardService struct {
 	listCards      []store.Card
 	listSets       []string
 	getSetInfo     []cards.SetCompletion
+	getStatInfo    *cards.CollectionStats
 	getErr         error
 	searchErr      error
 	listErr        error
 	listSetsErr    error
 	getSetInfoErr  error
+	getStatInfoErr error
 }
 
 func (s *stubCardService) GetCard(_ context.Context, _, _, _ string) (*store.Card, error) {
@@ -43,6 +45,9 @@ func (s *stubCardService) ListSets(_ context.Context) ([]string, error) {
 }
 func (s *stubCardService) GetSetInfo(_ context.Context) ([]cards.SetCompletion, error) {
 	return s.getSetInfo, s.getSetInfoErr
+}
+func (s *stubCardService) GetStatInfo(_ context.Context) (*cards.CollectionStats, error) {
+	return s.getStatInfo, s.getStatInfoErr
 }
 func TestSearchCards_Success(t *testing.T) {
 	srv := New(&stubCardService{
@@ -201,6 +206,101 @@ func TestGetSetInfo_InternalRequest(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
+	if status.Code(err) != codes.Internal {
+		t.Errorf("got code %v, want %v", status.Code(err), codes.Internal)
+	}
+}
+
+func TestGetStatInfo_Success(t *testing.T) {
+	srv := New(&stubCardService{
+		getStatInfo: &cards.CollectionStats{
+			TotalNetWorth: 1234.56,
+			TopKCards: []store.Card{
+				{
+					Name:   "Black Lotus",
+					Set:    "LEA",
+					Number: "233",
+					Count:  1,
+					Prices: store.Prices{USD: "45000.00"},
+				},
+				{
+					Name:   "Sol Ring",
+					Set:    "C21",
+					Number: "263",
+					Count:  4,
+					Prices: store.Prices{USD: "0.50"},
+				},
+			},
+			ColorDist: cards.ColorDistribution{
+				White: 10,
+				Blue:  5,
+				Red:   7,
+			},
+			RarityDist: cards.RarityDistribution{
+				Common:   100,
+				Uncommon: 50,
+				Rare:     20,
+				Mythic:   5,
+			},
+			TypeDist: map[string]int{
+				"Creature": 42,
+				"Artifact": 15,
+			},
+			SubTypeDist: map[string]map[string]int{
+				"Creature": {
+					"Elf":    8,
+					"Goblin": 4,
+				},
+				"Artifact": {
+					"Equipment": 3,
+				},
+			},
+		},
+	})
+
+	resp, err := srv.GetStatInfo(context.Background(), &pb.GetStatInfoRequest{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if resp.TotalNetWorth != 1234.56 {
+		t.Errorf("got total_net_worth %v, want 1234.56", resp.TotalNetWorth)
+	}
+
+	if len(resp.TopKCards) != 2 {
+		t.Fatalf("got %d cards, want 2", len(resp.TopKCards))
+	}
+
+	if resp.TopKCards[0].Name != "Black Lotus" {
+		t.Errorf("got %q, want %q", resp.TopKCards[0].Name, "Black Lotus")
+	}
+
+	if resp.ColorDist.White != 10 {
+		t.Errorf("got white=%d, want 10", resp.ColorDist.White)
+	}
+
+	if resp.RarityDist.Mythic != 5 {
+		t.Errorf("got mythic=%d, want 5", resp.RarityDist.Mythic)
+	}
+
+	if resp.TypeDist["Creature"] != 42 {
+		t.Errorf("got creature=%d, want 42", resp.TypeDist["Creature"])
+	}
+
+	if resp.SubtypeDist["Creature"].Counts["Elf"] != 8 {
+		t.Errorf("got elf=%d, want 8", resp.SubtypeDist["Creature"].Counts["Elf"])
+	}
+}
+func TestGetStatInfo_InternalRequest(t *testing.T) {
+	srv := New(&stubCardService{
+		getStatInfoErr: errors.New("stats unavailable"),
+	})
+
+	_, err := srv.GetStatInfo(context.Background(), &pb.GetStatInfoRequest{})
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+
 	if status.Code(err) != codes.Internal {
 		t.Errorf("got code %v, want %v", status.Code(err), codes.Internal)
 	}

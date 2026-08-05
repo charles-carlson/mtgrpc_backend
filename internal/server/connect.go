@@ -78,3 +78,10 @@ func (a *ConnectAdapter) GetSetInfo(ctx context.Context, req *connect.Request[pb
 	}
 	return connect.NewResponse(resp), nil
 }
+func (a *ConnectAdapter) GetStatInfo(ctx context.Context, req *connect.Request[pb.GetStatInfoRequest]) (*connect.Response[pb.GetStatInfoResponse], error) {
+	resp, err := a.impl.GetStatInfo(ctx, req.Msg)
+	if err != nil {
+		return nil, toConnectErr(err)
+	}
+	return connect.NewResponse(resp), nil
+}

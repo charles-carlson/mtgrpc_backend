@@ -54,6 +54,43 @@ func toProtoSetCompletions(cs []cards.SetCompletion) []*pb.SetCompletion {
 	}
 	return out
 }
+func toProtoStatInfo(stats cards.CollectionStats) *pb.GetStatInfoResponse {
+	typeDist := make(map[string]int32)
+	for k, v := range stats.TypeDist {
+		typeDist[k] = int32(v)
+	}
+
+	colorDist := &pb.ColorDistribution{
+		White:     int32(stats.ColorDist.White),
+		Blue:      int32(stats.ColorDist.Blue),
+		Red:       int32(stats.ColorDist.Red),
+		Green:     int32(stats.ColorDist.Green),
+		Black:     int32(stats.ColorDist.Black),
+		Colorless: int32(stats.ColorDist.Colorless),
+	}
+
+	rarityDist := &pb.RarityDistribution{
+		Common:   int32(stats.RarityDist.Common),
+		Uncommon: int32(stats.RarityDist.Uncommon),
+		Rare:     int32(stats.RarityDist.Rare),
+		Mythic:   int32(stats.RarityDist.Mythic),
+		Special:  int32(stats.RarityDist.Special),
+		Bonus:    int32(stats.RarityDist.Bonus),
+	}
+	subTypeDist := make(map[string]*pb.SubTypeDistribution)
+	for cardType, subTypes := range stats.SubTypeDist {
+		subTypeDist[cardType] = &pb.SubTypeDistribution{
+			Counts: make(map[string]int32),
+		}
+		for subtype, count := range subTypes {
+			subTypeDist[cardType].Counts[subtype] = int32(count)
+		}
+	}
+
+	return &pb.GetStatInfoResponse{TotalNetWorth: stats.TotalNetWorth, TopKCards: toProtoCards(stats.TopKCards),
+		RarityDist: rarityDist, ColorDist: colorDist, TypeDist: typeDist, SubtypeDist: subTypeDist,
+	}
+}
 
 type cardService interface {
 	GetCard(ctx context.Context, name, set, number string) (*store.Card, error)
@@ -61,6 +98,7 @@ type cardService interface {
 	ListCards(ctx context.Context, pageSize int32, pageToken string) ([]store.Card, string, error)
 	ListSets(ctx context.Context) ([]string, error)
 	GetSetInfo(ctx context.Context) ([]cards.SetCompletion, error)
+	GetStatInfo(context.Context) (*cards.CollectionStats, error)
 }
 
 type Server struct {
@@ -74,7 +112,8 @@ var (
 	errQueryCardsInternal = status.Errorf(codes.Internal, "Unable to query cards")
 	errListCards          = status.Errorf(codes.Internal, "Unable to fetch collection")
 	errListSets           = status.Errorf(codes.Internal, "Unable to retrieve set information")
-	errGetSetInfo         = status.Errorf(codes.Internal, "unable to retrieve set completion data")
+	errGetSetInfo         = status.Errorf(codes.Internal, "Unable to retrieve set completion data")
+	errGetStatInfo        = status.Errorf(codes.Internal, "Unable to retrieve stat info data")
 )
 
 func New(svc cardService) *Server {
@@ -129,4 +168,12 @@ func (s *Server) GetSetInfo(ctx context.Context, req *pb.GetSetInfoRequest) (*pb
 		return nil, errGetSetInfo
 	}
 	return &pb.GetSetInfoResponse{Sets: toProtoSetCompletions(results)}, nil
+}
+func (s *Server) GetStatInfo(ctx context.Context, req *pb.GetStatInfoRequest) (*pb.GetStatInfoResponse, error) {
+	results, err := s.cards.GetStatInfo(ctx)
+	if err != nil {
+		return nil, errGetStatInfo
+	}
+	protoResponse := toProtoStatInfo(*results)
+	return protoResponse, nil
 }

@@ -21,6 +21,218 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type ColorDistribution struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	White         int32                  `protobuf:"varint,1,opt,name=white,proto3" json:"white,omitempty"`
+	Blue          int32                  `protobuf:"varint,2,opt,name=blue,proto3" json:"blue,omitempty"`
+	Red           int32                  `protobuf:"varint,3,opt,name=red,proto3" json:"red,omitempty"`
+	Green         int32                  `protobuf:"varint,4,opt,name=green,proto3" json:"green,omitempty"`
+	Black         int32                  `protobuf:"varint,5,opt,name=black,proto3" json:"black,omitempty"`
+	Colorless     int32                  `protobuf:"varint,6,opt,name=colorless,proto3" json:"colorless,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ColorDistribution) Reset() {
+	*x = ColorDistribution{}
+	mi := &file_proto_cards_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ColorDistribution) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ColorDistribution) ProtoMessage() {}
+
+func (x *ColorDistribution) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_cards_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ColorDistribution.ProtoReflect.Descriptor instead.
+func (*ColorDistribution) Descriptor() ([]byte, []int) {
+	return file_proto_cards_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *ColorDistribution) GetWhite() int32 {
+	if x != nil {
+		return x.White
+	}
+	return 0
+}
+
+func (x *ColorDistribution) GetBlue() int32 {
+	if x != nil {
+		return x.Blue
+	}
+	return 0
+}
+
+func (x *ColorDistribution) GetRed() int32 {
+	if x != nil {
+		return x.Red
+	}
+	return 0
+}
+
+func (x *ColorDistribution) GetGreen() int32 {
+	if x != nil {
+		return x.Green
+	}
+	return 0
+}
+
+func (x *ColorDistribution) GetBlack() int32 {
+	if x != nil {
+		return x.Black
+	}
+	return 0
+}
+
+func (x *ColorDistribution) GetColorless() int32 {
+	if x != nil {
+		return x.Colorless
+	}
+	return 0
+}
+
+type RarityDistribution struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Common        int32                  `protobuf:"varint,1,opt,name=common,proto3" json:"common,omitempty"`
+	Uncommon      int32                  `protobuf:"varint,2,opt,name=uncommon,proto3" json:"uncommon,omitempty"`
+	Rare          int32                  `protobuf:"varint,3,opt,name=rare,proto3" json:"rare,omitempty"`
+	Mythic        int32                  `protobuf:"varint,4,opt,name=mythic,proto3" json:"mythic,omitempty"`
+	Special       int32                  `protobuf:"varint,5,opt,name=special,proto3" json:"special,omitempty"`
+	Bonus         int32                  `protobuf:"varint,6,opt,name=bonus,proto3" json:"bonus,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RarityDistribution) Reset() {
+	*x = RarityDistribution{}
+	mi := &file_proto_cards_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RarityDistribution) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RarityDistribution) ProtoMessage() {}
+
+func (x *RarityDistribution) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_cards_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RarityDistribution.ProtoReflect.Descriptor instead.
+func (*RarityDistribution) Descriptor() ([]byte, []int) {
+	return file_proto_cards_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *RarityDistribution) GetCommon() int32 {
+	if x != nil {
+		return x.Common
+	}
+	return 0
+}
+
+func (x *RarityDistribution) GetUncommon() int32 {
+	if x != nil {
+		return x.Uncommon
+	}
+	return 0
+}
+
+func (x *RarityDistribution) GetRare() int32 {
+	if x != nil {
+		return x.Rare
+	}
+	return 0
+}
+
+func (x *RarityDistribution) GetMythic() int32 {
+	if x != nil {
+		return x.Mythic
+	}
+	return 0
+}
+
+func (x *RarityDistribution) GetSpecial() int32 {
+	if x != nil {
+		return x.Special
+	}
+	return 0
+}
+
+func (x *RarityDistribution) GetBonus() int32 {
+	if x != nil {
+		return x.Bonus
+	}
+	return 0
+}
+
+type SubTypeDistribution struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Counts        map[string]int32       `protobuf:"bytes,1,rep,name=counts,proto3" json:"counts,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SubTypeDistribution) Reset() {
+	*x = SubTypeDistribution{}
+	mi := &file_proto_cards_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SubTypeDistribution) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SubTypeDistribution) ProtoMessage() {}
+
+func (x *SubTypeDistribution) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_cards_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SubTypeDistribution.ProtoReflect.Descriptor instead.
+func (*SubTypeDistribution) Descriptor() ([]byte, []int) {
+	return file_proto_cards_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *SubTypeDistribution) GetCounts() map[string]int32 {
+	if x != nil {
+		return x.Counts
+	}
+	return nil
+}
+
 // Prices message
 type Prices struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -35,7 +247,7 @@ type Prices struct {
 
 func (x *Prices) Reset() {
 	*x = Prices{}
-	mi := &file_proto_cards_proto_msgTypes[0]
+	mi := &file_proto_cards_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -47,7 +259,7 @@ func (x *Prices) String() string {
 func (*Prices) ProtoMessage() {}
 
 func (x *Prices) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_cards_proto_msgTypes[0]
+	mi := &file_proto_cards_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -60,7 +272,7 @@ func (x *Prices) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Prices.ProtoReflect.Descriptor instead.
 func (*Prices) Descriptor() ([]byte, []int) {
-	return file_proto_cards_proto_rawDescGZIP(), []int{0}
+	return file_proto_cards_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Prices) GetUsd() string {
@@ -109,13 +321,15 @@ type Card struct {
 	Prices        *Prices                `protobuf:"bytes,6,opt,name=prices,proto3" json:"prices,omitempty"`
 	Colors        []string               `protobuf:"bytes,7,rep,name=colors,proto3" json:"colors,omitempty"`
 	Rarity        string                 `protobuf:"bytes,8,opt,name=rarity,proto3" json:"rarity,omitempty"`
+	Finish        string                 `protobuf:"bytes,9,opt,name=finish,proto3" json:"finish,omitempty"`
+	TypeLine      string                 `protobuf:"bytes,10,opt,name=type_line,json=typeLine,proto3" json:"type_line,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Card) Reset() {
 	*x = Card{}
-	mi := &file_proto_cards_proto_msgTypes[1]
+	mi := &file_proto_cards_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -127,7 +341,7 @@ func (x *Card) String() string {
 func (*Card) ProtoMessage() {}
 
 func (x *Card) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_cards_proto_msgTypes[1]
+	mi := &file_proto_cards_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -140,7 +354,7 @@ func (x *Card) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Card.ProtoReflect.Descriptor instead.
 func (*Card) Descriptor() ([]byte, []int) {
-	return file_proto_cards_proto_rawDescGZIP(), []int{1}
+	return file_proto_cards_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Card) GetName() string {
@@ -199,6 +413,20 @@ func (x *Card) GetRarity() string {
 	return ""
 }
 
+func (x *Card) GetFinish() string {
+	if x != nil {
+		return x.Finish
+	}
+	return ""
+}
+
+func (x *Card) GetTypeLine() string {
+	if x != nil {
+		return x.TypeLine
+	}
+	return ""
+}
+
 type SetCompletion struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ImageUri      string                 `protobuf:"bytes,1,opt,name=image_uri,json=imageUri,proto3" json:"image_uri,omitempty"`
@@ -211,7 +439,7 @@ type SetCompletion struct {
 
 func (x *SetCompletion) Reset() {
 	*x = SetCompletion{}
-	mi := &file_proto_cards_proto_msgTypes[2]
+	mi := &file_proto_cards_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -223,7 +451,7 @@ func (x *SetCompletion) String() string {
 func (*SetCompletion) ProtoMessage() {}
 
 func (x *SetCompletion) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_cards_proto_msgTypes[2]
+	mi := &file_proto_cards_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -236,7 +464,7 @@ func (x *SetCompletion) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetCompletion.ProtoReflect.Descriptor instead.
 func (*SetCompletion) Descriptor() ([]byte, []int) {
-	return file_proto_cards_proto_rawDescGZIP(), []int{2}
+	return file_proto_cards_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *SetCompletion) GetImageUri() string {
@@ -275,7 +503,7 @@ type GetSetInfoRequest struct {
 
 func (x *GetSetInfoRequest) Reset() {
 	*x = GetSetInfoRequest{}
-	mi := &file_proto_cards_proto_msgTypes[3]
+	mi := &file_proto_cards_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -287,7 +515,7 @@ func (x *GetSetInfoRequest) String() string {
 func (*GetSetInfoRequest) ProtoMessage() {}
 
 func (x *GetSetInfoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_cards_proto_msgTypes[3]
+	mi := &file_proto_cards_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -300,7 +528,7 @@ func (x *GetSetInfoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSetInfoRequest.ProtoReflect.Descriptor instead.
 func (*GetSetInfoRequest) Descriptor() ([]byte, []int) {
-	return file_proto_cards_proto_rawDescGZIP(), []int{3}
+	return file_proto_cards_proto_rawDescGZIP(), []int{6}
 }
 
 type GetSetInfoResponse struct {
@@ -312,7 +540,7 @@ type GetSetInfoResponse struct {
 
 func (x *GetSetInfoResponse) Reset() {
 	*x = GetSetInfoResponse{}
-	mi := &file_proto_cards_proto_msgTypes[4]
+	mi := &file_proto_cards_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -324,7 +552,7 @@ func (x *GetSetInfoResponse) String() string {
 func (*GetSetInfoResponse) ProtoMessage() {}
 
 func (x *GetSetInfoResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_cards_proto_msgTypes[4]
+	mi := &file_proto_cards_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -337,7 +565,7 @@ func (x *GetSetInfoResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSetInfoResponse.ProtoReflect.Descriptor instead.
 func (*GetSetInfoResponse) Descriptor() ([]byte, []int) {
-	return file_proto_cards_proto_rawDescGZIP(), []int{4}
+	return file_proto_cards_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetSetInfoResponse) GetSets() []*SetCompletion {
@@ -359,7 +587,7 @@ type GetCardRequest struct {
 
 func (x *GetCardRequest) Reset() {
 	*x = GetCardRequest{}
-	mi := &file_proto_cards_proto_msgTypes[5]
+	mi := &file_proto_cards_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -371,7 +599,7 @@ func (x *GetCardRequest) String() string {
 func (*GetCardRequest) ProtoMessage() {}
 
 func (x *GetCardRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_cards_proto_msgTypes[5]
+	mi := &file_proto_cards_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -384,7 +612,7 @@ func (x *GetCardRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCardRequest.ProtoReflect.Descriptor instead.
 func (*GetCardRequest) Descriptor() ([]byte, []int) {
-	return file_proto_cards_proto_rawDescGZIP(), []int{5}
+	return file_proto_cards_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetCardRequest) GetName() string {
@@ -417,7 +645,7 @@ type GetCardResponse struct {
 
 func (x *GetCardResponse) Reset() {
 	*x = GetCardResponse{}
-	mi := &file_proto_cards_proto_msgTypes[6]
+	mi := &file_proto_cards_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -429,7 +657,7 @@ func (x *GetCardResponse) String() string {
 func (*GetCardResponse) ProtoMessage() {}
 
 func (x *GetCardResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_cards_proto_msgTypes[6]
+	mi := &file_proto_cards_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -442,7 +670,7 @@ func (x *GetCardResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCardResponse.ProtoReflect.Descriptor instead.
 func (*GetCardResponse) Descriptor() ([]byte, []int) {
-	return file_proto_cards_proto_rawDescGZIP(), []int{6}
+	return file_proto_cards_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetCardResponse) GetCard() *Card {
@@ -467,7 +695,7 @@ type SearchCardsRequest struct {
 
 func (x *SearchCardsRequest) Reset() {
 	*x = SearchCardsRequest{}
-	mi := &file_proto_cards_proto_msgTypes[7]
+	mi := &file_proto_cards_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -479,7 +707,7 @@ func (x *SearchCardsRequest) String() string {
 func (*SearchCardsRequest) ProtoMessage() {}
 
 func (x *SearchCardsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_cards_proto_msgTypes[7]
+	mi := &file_proto_cards_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -492,7 +720,7 @@ func (x *SearchCardsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchCardsRequest.ProtoReflect.Descriptor instead.
 func (*SearchCardsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_cards_proto_rawDescGZIP(), []int{7}
+	return file_proto_cards_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *SearchCardsRequest) GetName() string {
@@ -547,7 +775,7 @@ type SearchCardsResponse struct {
 
 func (x *SearchCardsResponse) Reset() {
 	*x = SearchCardsResponse{}
-	mi := &file_proto_cards_proto_msgTypes[8]
+	mi := &file_proto_cards_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -559,7 +787,7 @@ func (x *SearchCardsResponse) String() string {
 func (*SearchCardsResponse) ProtoMessage() {}
 
 func (x *SearchCardsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_cards_proto_msgTypes[8]
+	mi := &file_proto_cards_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -572,7 +800,7 @@ func (x *SearchCardsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchCardsResponse.ProtoReflect.Descriptor instead.
 func (*SearchCardsResponse) Descriptor() ([]byte, []int) {
-	return file_proto_cards_proto_rawDescGZIP(), []int{8}
+	return file_proto_cards_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *SearchCardsResponse) GetCards() []*Card {
@@ -600,7 +828,7 @@ type ListCardsRequest struct {
 
 func (x *ListCardsRequest) Reset() {
 	*x = ListCardsRequest{}
-	mi := &file_proto_cards_proto_msgTypes[9]
+	mi := &file_proto_cards_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -612,7 +840,7 @@ func (x *ListCardsRequest) String() string {
 func (*ListCardsRequest) ProtoMessage() {}
 
 func (x *ListCardsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_cards_proto_msgTypes[9]
+	mi := &file_proto_cards_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -625,7 +853,7 @@ func (x *ListCardsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCardsRequest.ProtoReflect.Descriptor instead.
 func (*ListCardsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_cards_proto_rawDescGZIP(), []int{9}
+	return file_proto_cards_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ListCardsRequest) GetPageSize() int32 {
@@ -652,7 +880,7 @@ type ListCardsResponse struct {
 
 func (x *ListCardsResponse) Reset() {
 	*x = ListCardsResponse{}
-	mi := &file_proto_cards_proto_msgTypes[10]
+	mi := &file_proto_cards_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -664,7 +892,7 @@ func (x *ListCardsResponse) String() string {
 func (*ListCardsResponse) ProtoMessage() {}
 
 func (x *ListCardsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_cards_proto_msgTypes[10]
+	mi := &file_proto_cards_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -677,7 +905,7 @@ func (x *ListCardsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCardsResponse.ProtoReflect.Descriptor instead.
 func (*ListCardsResponse) Descriptor() ([]byte, []int) {
-	return file_proto_cards_proto_rawDescGZIP(), []int{10}
+	return file_proto_cards_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ListCardsResponse) GetCards() []*Card {
@@ -702,7 +930,7 @@ type ListSetsRequest struct {
 
 func (x *ListSetsRequest) Reset() {
 	*x = ListSetsRequest{}
-	mi := &file_proto_cards_proto_msgTypes[11]
+	mi := &file_proto_cards_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -714,7 +942,7 @@ func (x *ListSetsRequest) String() string {
 func (*ListSetsRequest) ProtoMessage() {}
 
 func (x *ListSetsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_cards_proto_msgTypes[11]
+	mi := &file_proto_cards_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -727,7 +955,7 @@ func (x *ListSetsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSetsRequest.ProtoReflect.Descriptor instead.
 func (*ListSetsRequest) Descriptor() ([]byte, []int) {
-	return file_proto_cards_proto_rawDescGZIP(), []int{11}
+	return file_proto_cards_proto_rawDescGZIP(), []int{14}
 }
 
 type ListSetsResponse struct {
@@ -739,7 +967,7 @@ type ListSetsResponse struct {
 
 func (x *ListSetsResponse) Reset() {
 	*x = ListSetsResponse{}
-	mi := &file_proto_cards_proto_msgTypes[12]
+	mi := &file_proto_cards_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -751,7 +979,7 @@ func (x *ListSetsResponse) String() string {
 func (*ListSetsResponse) ProtoMessage() {}
 
 func (x *ListSetsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_cards_proto_msgTypes[12]
+	mi := &file_proto_cards_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -764,7 +992,7 @@ func (x *ListSetsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSetsResponse.ProtoReflect.Descriptor instead.
 func (*ListSetsResponse) Descriptor() ([]byte, []int) {
-	return file_proto_cards_proto_rawDescGZIP(), []int{12}
+	return file_proto_cards_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *ListSetsResponse) GetSets() []string {
@@ -774,17 +1002,156 @@ func (x *ListSetsResponse) GetSets() []string {
 	return nil
 }
 
+type GetStatInfoRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetStatInfoRequest) Reset() {
+	*x = GetStatInfoRequest{}
+	mi := &file_proto_cards_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetStatInfoRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetStatInfoRequest) ProtoMessage() {}
+
+func (x *GetStatInfoRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_cards_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetStatInfoRequest.ProtoReflect.Descriptor instead.
+func (*GetStatInfoRequest) Descriptor() ([]byte, []int) {
+	return file_proto_cards_proto_rawDescGZIP(), []int{16}
+}
+
+type GetStatInfoResponse struct {
+	state         protoimpl.MessageState          `protogen:"open.v1"`
+	TotalNetWorth float64                         `protobuf:"fixed64,1,opt,name=total_net_worth,json=totalNetWorth,proto3" json:"total_net_worth,omitempty"`
+	TopKCards     []*Card                         `protobuf:"bytes,2,rep,name=top_k_cards,json=topKCards,proto3" json:"top_k_cards,omitempty"`
+	RarityDist    *RarityDistribution             `protobuf:"bytes,3,opt,name=rarity_dist,json=rarityDist,proto3" json:"rarity_dist,omitempty"`
+	ColorDist     *ColorDistribution              `protobuf:"bytes,4,opt,name=color_dist,json=colorDist,proto3" json:"color_dist,omitempty"`
+	TypeDist      map[string]int32                `protobuf:"bytes,5,rep,name=type_dist,json=typeDist,proto3" json:"type_dist,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	SubtypeDist   map[string]*SubTypeDistribution `protobuf:"bytes,6,rep,name=subtype_dist,json=subtypeDist,proto3" json:"subtype_dist,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetStatInfoResponse) Reset() {
+	*x = GetStatInfoResponse{}
+	mi := &file_proto_cards_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetStatInfoResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetStatInfoResponse) ProtoMessage() {}
+
+func (x *GetStatInfoResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_cards_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetStatInfoResponse.ProtoReflect.Descriptor instead.
+func (*GetStatInfoResponse) Descriptor() ([]byte, []int) {
+	return file_proto_cards_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *GetStatInfoResponse) GetTotalNetWorth() float64 {
+	if x != nil {
+		return x.TotalNetWorth
+	}
+	return 0
+}
+
+func (x *GetStatInfoResponse) GetTopKCards() []*Card {
+	if x != nil {
+		return x.TopKCards
+	}
+	return nil
+}
+
+func (x *GetStatInfoResponse) GetRarityDist() *RarityDistribution {
+	if x != nil {
+		return x.RarityDist
+	}
+	return nil
+}
+
+func (x *GetStatInfoResponse) GetColorDist() *ColorDistribution {
+	if x != nil {
+		return x.ColorDist
+	}
+	return nil
+}
+
+func (x *GetStatInfoResponse) GetTypeDist() map[string]int32 {
+	if x != nil {
+		return x.TypeDist
+	}
+	return nil
+}
+
+func (x *GetStatInfoResponse) GetSubtypeDist() map[string]*SubTypeDistribution {
+	if x != nil {
+		return x.SubtypeDist
+	}
+	return nil
+}
+
 var File_proto_cards_proto protoreflect.FileDescriptor
 
 const file_proto_cards_proto_rawDesc = "" +
 	"\n" +
-	"\x11proto/cards.proto\x12\x05cards\"t\n" +
+	"\x11proto/cards.proto\x12\x05cards\"\x99\x01\n" +
+	"\x11ColorDistribution\x12\x14\n" +
+	"\x05white\x18\x01 \x01(\x05R\x05white\x12\x12\n" +
+	"\x04blue\x18\x02 \x01(\x05R\x04blue\x12\x10\n" +
+	"\x03red\x18\x03 \x01(\x05R\x03red\x12\x14\n" +
+	"\x05green\x18\x04 \x01(\x05R\x05green\x12\x14\n" +
+	"\x05black\x18\x05 \x01(\x05R\x05black\x12\x1c\n" +
+	"\tcolorless\x18\x06 \x01(\x05R\tcolorless\"\xa4\x01\n" +
+	"\x12RarityDistribution\x12\x16\n" +
+	"\x06common\x18\x01 \x01(\x05R\x06common\x12\x1a\n" +
+	"\buncommon\x18\x02 \x01(\x05R\buncommon\x12\x12\n" +
+	"\x04rare\x18\x03 \x01(\x05R\x04rare\x12\x16\n" +
+	"\x06mythic\x18\x04 \x01(\x05R\x06mythic\x12\x18\n" +
+	"\aspecial\x18\x05 \x01(\x05R\aspecial\x12\x14\n" +
+	"\x05bonus\x18\x06 \x01(\x05R\x05bonus\"\x90\x01\n" +
+	"\x13SubTypeDistribution\x12>\n" +
+	"\x06counts\x18\x01 \x03(\v2&.cards.SubTypeDistribution.CountsEntryR\x06counts\x1a9\n" +
+	"\vCountsEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\"t\n" +
 	"\x06Prices\x12\x10\n" +
 	"\x03usd\x18\x01 \x01(\tR\x03usd\x12\x19\n" +
 	"\busd_foil\x18\x02 \x01(\tR\ausdFoil\x12\x10\n" +
 	"\x03eur\x18\x03 \x01(\tR\x03eur\x12\x19\n" +
 	"\beur_foil\x18\x04 \x01(\tR\aeurFoil\x12\x10\n" +
-	"\x03tix\x18\x05 \x01(\tR\x03tix\"\xce\x01\n" +
+	"\x03tix\x18\x05 \x01(\tR\x03tix\"\x83\x02\n" +
 	"\x04Card\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x10\n" +
 	"\x03set\x18\x02 \x01(\tR\x03set\x12\x16\n" +
@@ -793,7 +1160,10 @@ const file_proto_cards_proto_rawDesc = "" +
 	"\timage_url\x18\x05 \x01(\tR\bimageUrl\x12%\n" +
 	"\x06prices\x18\x06 \x01(\v2\r.cards.PricesR\x06prices\x12\x16\n" +
 	"\x06colors\x18\a \x03(\tR\x06colors\x12\x16\n" +
-	"\x06rarity\x18\b \x01(\tR\x06rarity\"j\n" +
+	"\x06rarity\x18\b \x01(\tR\x06rarity\x12\x16\n" +
+	"\x06finish\x18\t \x01(\tR\x06finish\x12\x1b\n" +
+	"\ttype_line\x18\n" +
+	" \x01(\tR\btypeLine\"j\n" +
 	"\rSetCompletion\x12\x1b\n" +
 	"\timage_uri\x18\x01 \x01(\tR\bimageUri\x12\x10\n" +
 	"\x03set\x18\x02 \x01(\tR\x03set\x12\x14\n" +
@@ -828,14 +1198,31 @@ const file_proto_cards_proto_rawDesc = "" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\x11\n" +
 	"\x0fListSetsRequest\"&\n" +
 	"\x10ListSetsResponse\x12\x12\n" +
-	"\x04sets\x18\x01 \x03(\tR\x04sets2\xd2\x02\n" +
+	"\x04sets\x18\x01 \x03(\tR\x04sets\"\x14\n" +
+	"\x12GetStatInfoRequest\"\x8f\x04\n" +
+	"\x13GetStatInfoResponse\x12&\n" +
+	"\x0ftotal_net_worth\x18\x01 \x01(\x01R\rtotalNetWorth\x12+\n" +
+	"\vtop_k_cards\x18\x02 \x03(\v2\v.cards.CardR\ttopKCards\x12:\n" +
+	"\vrarity_dist\x18\x03 \x01(\v2\x19.cards.RarityDistributionR\n" +
+	"rarityDist\x127\n" +
+	"\n" +
+	"color_dist\x18\x04 \x01(\v2\x18.cards.ColorDistributionR\tcolorDist\x12E\n" +
+	"\ttype_dist\x18\x05 \x03(\v2(.cards.GetStatInfoResponse.TypeDistEntryR\btypeDist\x12N\n" +
+	"\fsubtype_dist\x18\x06 \x03(\v2+.cards.GetStatInfoResponse.SubtypeDistEntryR\vsubtypeDist\x1a;\n" +
+	"\rTypeDistEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\x1aZ\n" +
+	"\x10SubtypeDistEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x120\n" +
+	"\x05value\x18\x02 \x01(\v2\x1a.cards.SubTypeDistributionR\x05value:\x028\x012\x9a\x03\n" +
 	"\x06MTGRPC\x12:\n" +
 	"\aGetCard\x12\x15.cards.GetCardRequest\x1a\x16.cards.GetCardResponse\"\x00\x12F\n" +
 	"\vSearchCards\x12\x19.cards.SearchCardsRequest\x1a\x1a.cards.SearchCardsResponse\"\x00\x12@\n" +
 	"\tListCards\x12\x17.cards.ListCardsRequest\x1a\x18.cards.ListCardsResponse\"\x00\x12=\n" +
 	"\bListSets\x12\x16.cards.ListSetsRequest\x1a\x17.cards.ListSetsResponse\"\x00\x12C\n" +
 	"\n" +
-	"GetSetInfo\x12\x18.cards.GetSetInfoRequest\x1a\x19.cards.GetSetInfoResponse\"\x00B\x15Z\x13backend_nonsense/pbb\x06proto3"
+	"GetSetInfo\x12\x18.cards.GetSetInfoRequest\x1a\x19.cards.GetSetInfoResponse\"\x00\x12F\n" +
+	"\vGetStatInfo\x12\x19.cards.GetStatInfoRequest\x1a\x1a.cards.GetStatInfoResponse\"\x00B\x15Z\x13backend_nonsense/pbb\x06proto3"
 
 var (
 	file_proto_cards_proto_rawDescOnce sync.Once
@@ -849,43 +1236,60 @@ func file_proto_cards_proto_rawDescGZIP() []byte {
 	return file_proto_cards_proto_rawDescData
 }
 
-var file_proto_cards_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_proto_cards_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_proto_cards_proto_goTypes = []any{
-	(*Prices)(nil),              // 0: cards.Prices
-	(*Card)(nil),                // 1: cards.Card
-	(*SetCompletion)(nil),       // 2: cards.SetCompletion
-	(*GetSetInfoRequest)(nil),   // 3: cards.GetSetInfoRequest
-	(*GetSetInfoResponse)(nil),  // 4: cards.GetSetInfoResponse
-	(*GetCardRequest)(nil),      // 5: cards.GetCardRequest
-	(*GetCardResponse)(nil),     // 6: cards.GetCardResponse
-	(*SearchCardsRequest)(nil),  // 7: cards.SearchCardsRequest
-	(*SearchCardsResponse)(nil), // 8: cards.SearchCardsResponse
-	(*ListCardsRequest)(nil),    // 9: cards.ListCardsRequest
-	(*ListCardsResponse)(nil),   // 10: cards.ListCardsResponse
-	(*ListSetsRequest)(nil),     // 11: cards.ListSetsRequest
-	(*ListSetsResponse)(nil),    // 12: cards.ListSetsResponse
+	(*ColorDistribution)(nil),   // 0: cards.ColorDistribution
+	(*RarityDistribution)(nil),  // 1: cards.RarityDistribution
+	(*SubTypeDistribution)(nil), // 2: cards.SubTypeDistribution
+	(*Prices)(nil),              // 3: cards.Prices
+	(*Card)(nil),                // 4: cards.Card
+	(*SetCompletion)(nil),       // 5: cards.SetCompletion
+	(*GetSetInfoRequest)(nil),   // 6: cards.GetSetInfoRequest
+	(*GetSetInfoResponse)(nil),  // 7: cards.GetSetInfoResponse
+	(*GetCardRequest)(nil),      // 8: cards.GetCardRequest
+	(*GetCardResponse)(nil),     // 9: cards.GetCardResponse
+	(*SearchCardsRequest)(nil),  // 10: cards.SearchCardsRequest
+	(*SearchCardsResponse)(nil), // 11: cards.SearchCardsResponse
+	(*ListCardsRequest)(nil),    // 12: cards.ListCardsRequest
+	(*ListCardsResponse)(nil),   // 13: cards.ListCardsResponse
+	(*ListSetsRequest)(nil),     // 14: cards.ListSetsRequest
+	(*ListSetsResponse)(nil),    // 15: cards.ListSetsResponse
+	(*GetStatInfoRequest)(nil),  // 16: cards.GetStatInfoRequest
+	(*GetStatInfoResponse)(nil), // 17: cards.GetStatInfoResponse
+	nil,                         // 18: cards.SubTypeDistribution.CountsEntry
+	nil,                         // 19: cards.GetStatInfoResponse.TypeDistEntry
+	nil,                         // 20: cards.GetStatInfoResponse.SubtypeDistEntry
 }
 var file_proto_cards_proto_depIdxs = []int32{
-	0,  // 0: cards.Card.prices:type_name -> cards.Prices
-	2,  // 1: cards.GetSetInfoResponse.sets:type_name -> cards.SetCompletion
-	1,  // 2: cards.GetCardResponse.card:type_name -> cards.Card
-	1,  // 3: cards.SearchCardsResponse.cards:type_name -> cards.Card
-	1,  // 4: cards.ListCardsResponse.cards:type_name -> cards.Card
-	5,  // 5: cards.MTGRPC.GetCard:input_type -> cards.GetCardRequest
-	7,  // 6: cards.MTGRPC.SearchCards:input_type -> cards.SearchCardsRequest
-	9,  // 7: cards.MTGRPC.ListCards:input_type -> cards.ListCardsRequest
-	11, // 8: cards.MTGRPC.ListSets:input_type -> cards.ListSetsRequest
-	3,  // 9: cards.MTGRPC.GetSetInfo:input_type -> cards.GetSetInfoRequest
-	6,  // 10: cards.MTGRPC.GetCard:output_type -> cards.GetCardResponse
-	8,  // 11: cards.MTGRPC.SearchCards:output_type -> cards.SearchCardsResponse
-	10, // 12: cards.MTGRPC.ListCards:output_type -> cards.ListCardsResponse
-	12, // 13: cards.MTGRPC.ListSets:output_type -> cards.ListSetsResponse
-	4,  // 14: cards.MTGRPC.GetSetInfo:output_type -> cards.GetSetInfoResponse
-	10, // [10:15] is the sub-list for method output_type
-	5,  // [5:10] is the sub-list for method input_type
-	5,  // [5:5] is the sub-list for extension type_name
-	5,  // [5:5] is the sub-list for extension extendee
-	0,  // [0:5] is the sub-list for field type_name
+	18, // 0: cards.SubTypeDistribution.counts:type_name -> cards.SubTypeDistribution.CountsEntry
+	3,  // 1: cards.Card.prices:type_name -> cards.Prices
+	5,  // 2: cards.GetSetInfoResponse.sets:type_name -> cards.SetCompletion
+	4,  // 3: cards.GetCardResponse.card:type_name -> cards.Card
+	4,  // 4: cards.SearchCardsResponse.cards:type_name -> cards.Card
+	4,  // 5: cards.ListCardsResponse.cards:type_name -> cards.Card
+	4,  // 6: cards.GetStatInfoResponse.top_k_cards:type_name -> cards.Card
+	1,  // 7: cards.GetStatInfoResponse.rarity_dist:type_name -> cards.RarityDistribution
+	0,  // 8: cards.GetStatInfoResponse.color_dist:type_name -> cards.ColorDistribution
+	19, // 9: cards.GetStatInfoResponse.type_dist:type_name -> cards.GetStatInfoResponse.TypeDistEntry
+	20, // 10: cards.GetStatInfoResponse.subtype_dist:type_name -> cards.GetStatInfoResponse.SubtypeDistEntry
+	2,  // 11: cards.GetStatInfoResponse.SubtypeDistEntry.value:type_name -> cards.SubTypeDistribution
+	8,  // 12: cards.MTGRPC.GetCard:input_type -> cards.GetCardRequest
+	10, // 13: cards.MTGRPC.SearchCards:input_type -> cards.SearchCardsRequest
+	12, // 14: cards.MTGRPC.ListCards:input_type -> cards.ListCardsRequest
+	14, // 15: cards.MTGRPC.ListSets:input_type -> cards.ListSetsRequest
+	6,  // 16: cards.MTGRPC.GetSetInfo:input_type -> cards.GetSetInfoRequest
+	16, // 17: cards.MTGRPC.GetStatInfo:input_type -> cards.GetStatInfoRequest
+	9,  // 18: cards.MTGRPC.GetCard:output_type -> cards.GetCardResponse
+	11, // 19: cards.MTGRPC.SearchCards:output_type -> cards.SearchCardsResponse
+	13, // 20: cards.MTGRPC.ListCards:output_type -> cards.ListCardsResponse
+	15, // 21: cards.MTGRPC.ListSets:output_type -> cards.ListSetsResponse
+	7,  // 22: cards.MTGRPC.GetSetInfo:output_type -> cards.GetSetInfoResponse
+	17, // 23: cards.MTGRPC.GetStatInfo:output_type -> cards.GetStatInfoResponse
+	18, // [18:24] is the sub-list for method output_type
+	12, // [12:18] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_proto_cards_proto_init() }
@@ -899,7 +1303,7 @@ func file_proto_cards_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_cards_proto_rawDesc), len(file_proto_cards_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

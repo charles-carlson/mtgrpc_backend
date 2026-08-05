@@ -91,7 +91,7 @@ func CheckPrice(finish string, prices store.Prices) string {
 }
 
 // WIP, need to set up finish type to ingestion pipeline
-func (svc *Service) GetStats(context.Context) (*CollectionStats, error) {
+func (svc *Service) GetStatInfo(context.Context) (*CollectionStats, error) {
 	snap := svc.cache.current()
 	if snap == nil {
 		return nil, errLoadingSnapshot
@@ -113,10 +113,7 @@ func (svc *Service) GetStats(context.Context) (*CollectionStats, error) {
 	for _, card := range collection {
 		//Retrieve correct price of card based on finish
 		value := CheckPrice(card.Finish, card.Prices)
-		price, err := strconv.ParseFloat(value, 64)
-		if err != nil {
-			return nil, err
-		}
+		price, _ := strconv.ParseFloat(value, 64) // "" or malformed → 0, don't fail the whole request
 		totalLiquid += price
 		//Rarity Dis
 		switch card.Rarity {

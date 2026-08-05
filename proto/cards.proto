@@ -10,8 +10,29 @@ service MTGRPC {
     rpc ListCards(ListCardsRequest)         returns (ListCardsResponse){}
     rpc ListSets(ListSetsRequest)           returns(ListSetsResponse){}
     rpc GetSetInfo(GetSetInfoRequest)       returns(GetSetInfoResponse){}
+    rpc GetStatInfo(GetStatInfoRequest)     returns(GetStatInfoResponse){}
+}
+message ColorDistribution {
+  int32 white = 1;
+  int32 blue = 2;
+  int32 red = 3;
+  int32 green = 4;
+  int32 black = 5;
+  int32 colorless = 6;
 }
 
+message RarityDistribution {
+  int32 common = 1;
+  int32 uncommon = 2;
+  int32 rare = 3;
+  int32 mythic = 4;
+  int32 special = 5;
+  int32 bonus = 6;
+}
+
+message SubTypeDistribution {
+  map<string, int32> counts = 1;
+}
 //Prices message
 message Prices {
     string usd = 1;
@@ -30,6 +51,8 @@ message Card {
     Prices prices  = 6;
     repeated string colors = 7;
     string rarity = 8;
+    string finish = 9;
+    string type_line = 10;
 }
 message SetCompletion {
 	string image_uri = 1;
@@ -81,4 +104,13 @@ message ListCardsResponse {
 message ListSetsRequest {}
 message ListSetsResponse {
     repeated string sets = 1;
+}
+message GetStatInfoRequest{}
+message GetStatInfoResponse{
+  double total_net_worth = 1;
+  repeated Card top_k_cards = 2;
+  RarityDistribution rarity_dist = 3;
+  ColorDistribution color_dist = 4;
+  map<string, int32> type_dist = 5;
+  map<string, SubTypeDistribution> subtype_dist = 6;
 }
