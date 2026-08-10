@@ -14,7 +14,7 @@ import (
 // Only non-empty fields are applied as filter conditions.
 type SearchFilter struct {
 	Name   string
-	Set    string
+	Sets   []string
 	Colors []string
 	Rarity []string
 }

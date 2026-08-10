@@ -684,7 +684,7 @@ func (x *GetCardResponse) GetCard() *Card {
 type SearchCardsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Set           string                 `protobuf:"bytes,2,opt,name=set,proto3" json:"set,omitempty"`
+	Set           []string               `protobuf:"bytes,2,rep,name=set,proto3" json:"set,omitempty"`
 	Colors        []string               `protobuf:"bytes,3,rep,name=colors,proto3" json:"colors,omitempty"` // e.g. ["W", "U", "B", "R", "G"]
 	PageSize      int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	PageToken     string                 `protobuf:"bytes,5,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
@@ -730,11 +730,11 @@ func (x *SearchCardsRequest) GetName() string {
 	return ""
 }
 
-func (x *SearchCardsRequest) GetSet() string {
+func (x *SearchCardsRequest) GetSet() []string {
 	if x != nil {
 		return x.Set
 	}
-	return ""
+	return nil
 }
 
 func (x *SearchCardsRequest) GetColors() []string {
@@ -1180,7 +1180,7 @@ const file_proto_cards_proto_rawDesc = "" +
 	"\x04card\x18\x01 \x01(\v2\v.cards.CardR\x04card\"\xa6\x01\n" +
 	"\x12SearchCardsRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x10\n" +
-	"\x03set\x18\x02 \x01(\tR\x03set\x12\x16\n" +
+	"\x03set\x18\x02 \x03(\tR\x03set\x12\x16\n" +
 	"\x06colors\x18\x03 \x03(\tR\x06colors\x12\x1b\n" +
 	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +

@@ -78,7 +78,7 @@ message GetCardResponse {
 // SearchCards — flexible filter, all fields optional
 message SearchCardsRequest {
     string          name       = 1;
-    string          set        = 2;
+    repeated string set        = 2;
     repeated string colors     = 3; // e.g. ["W", "U", "B", "R", "G"]
     int32           page_size  = 4;
     string          page_token = 5;

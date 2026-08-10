@@ -319,14 +319,14 @@ func (svc *Service) ListCards(ctx context.Context, pageSize int32, pageToken str
 }
 
 // SearchCards queries the collection with optional name, set, and color filters.
-func (svc *Service) SearchCards(ctx context.Context, name, set string, colors []string, rarity []string, pageSize int32, pageToken string) ([]store.Card, string, error) {
+func (svc *Service) SearchCards(ctx context.Context, name string, sets []string, colors []string, rarity []string, pageSize int32, pageToken string) ([]store.Card, string, error) {
 	snap := svc.cache.current()
 	if snap == nil {
 		return nil, "", errLoadingSnapshot
 	}
 	filtered := buildFilteredCards(snap.allCards, store.SearchFilter{
 		Name:   name,
-		Set:    set,
+		Sets:   sets,
 		Colors: colors,
 		Rarity: rarity,
 	})
@@ -389,7 +389,7 @@ func matches(c store.Card, f store.SearchFilter) bool {
 	if f.Name != "" && !strings.Contains(c.Name, f.Name) {
 		return false // fails the name group
 	}
-	if f.Set != "" && c.Set != f.Set {
+	if len(f.Sets) > 0 && !slices.Contains(f.Sets, c.Set) {
 		return false // fails the set group
 	}
 	if len(f.Rarity) > 0 && !slices.Contains(f.Rarity, c.Rarity) {

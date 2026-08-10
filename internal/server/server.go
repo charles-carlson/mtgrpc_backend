@@ -94,7 +94,7 @@ func toProtoStatInfo(stats cards.CollectionStats) *pb.GetStatInfoResponse {
 
 type cardService interface {
 	GetCard(ctx context.Context, name, set, number string) (*store.Card, error)
-	SearchCards(ctx context.Context, name, set string, colors []string, rarity []string, pageSize int32, pageToken string) ([]store.Card, string, error)
+	SearchCards(ctx context.Context, name string, sets []string, colors []string, rarity []string, pageSize int32, pageToken string) ([]store.Card, string, error)
 	ListCards(ctx context.Context, pageSize int32, pageToken string) ([]store.Card, string, error)
 	ListSets(ctx context.Context) ([]string, error)
 	GetSetInfo(ctx context.Context) ([]cards.SetCompletion, error)
