@@ -29,6 +29,11 @@ variable "vpc_id" {
   description = "VPC ID for the security group"
 }
 
+variable "vpc_cidr" {
+  type        = string
+  description = "VPC CIDR block — allowed to reach the gRPC port (internal NLB + CloudFront VPC origin traffic originates from inside the VPC)"
+}
+
 variable "subnet_id" {
   type        = string
   description = "Subnet ID to launch the instance in"

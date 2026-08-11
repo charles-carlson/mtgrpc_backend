@@ -74,6 +74,7 @@ module "ec2" {
   environment          = var.environment
   iam_instance_profile = module.iam.instance_profile_name
   vpc_id               = data.aws_vpc.default.id
+  vpc_cidr             = data.aws_vpc.default.cidr_block
   subnet_id            = tolist(data.aws_subnets.default.ids)[0]
   ecr_image_url        = "${module.ecr.repository_url}:latest"
   aws_region           = var.region

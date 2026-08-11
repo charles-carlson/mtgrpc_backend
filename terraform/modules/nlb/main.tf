@@ -1,6 +1,6 @@
 resource "aws_lb" "nlb" {
   name               = "${var.app_name}-nlb-${var.environment}"
-  internal           = false
+  internal           = true # no public IP — reachable only from inside the VPC (CloudFront VPC origin)
   load_balancer_type = "network"
   subnets            = var.subnet_ids
   tags = {

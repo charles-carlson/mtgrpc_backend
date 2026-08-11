@@ -28,11 +28,11 @@ resource "aws_security_group" "grpc_server" {
   }
 
   ingress {
-    description = "gRPC"
+    description = "gRPC — from inside the VPC only (the NLB is internal; CloudFront's VPC origin ENIs land here)"
     from_port   = 50051
     to_port     = 50051
     protocol    = "tcp"
-    cidr_blocks = [var.allowed_ssh_cidr]
+    cidr_blocks = [var.vpc_cidr]
   }
 
   egress {

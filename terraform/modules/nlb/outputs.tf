@@ -3,6 +3,11 @@ output "dns_name" {
   description = "DNS name of the NLB — use this as the server address in the client"
 }
 
+output "arn" {
+  value       = aws_lb.nlb.arn
+  description = "ARN of the NLB — needed by the frontend's aws_cloudfront_vpc_origin (in the mtg-web repo)"
+}
+
 output "target_group_arn" {
   value       = aws_lb_target_group.mtggrpc.arn
   description = "ARN of the target group to attach ECS tasks to"
