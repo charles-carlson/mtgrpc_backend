@@ -19,6 +19,16 @@ import (
 
 var errLoadingSnapshot = status.Errorf(codes.Internal, "Unable to load current snapshot from cache")
 
+type SortBy int
+
+const (
+	SORT_UNSPECIFIED SortBy = iota
+	NAME_ASC
+	NAME_DESC
+	PRICE_ASC
+	PRICE_DESC
+)
+
 type ColorDistribution struct {
 	White     int
 	Blue      int
@@ -319,7 +329,7 @@ func (svc *Service) ListCards(ctx context.Context, pageSize int32, pageToken str
 }
 
 // SearchCards queries the collection with optional name, set, and color filters.
-func (svc *Service) SearchCards(ctx context.Context, name string, sets []string, colors []string, rarity []string, pageSize int32, pageToken string) ([]store.Card, string, error) {
+func (svc *Service) SearchCards(ctx context.Context, name string, sets []string, colors []string, rarity []string, pageSize int32, pageToken string, sortBy SortBy) ([]store.Card, string, error) {
 	snap := svc.cache.current()
 	if snap == nil {
 		return nil, "", errLoadingSnapshot
@@ -330,7 +340,8 @@ func (svc *Service) SearchCards(ctx context.Context, name string, sets []string,
 		Colors: colors,
 		Rarity: rarity,
 	})
-	return paginate(filtered, pageSize, pageToken)
+	sorted := buildSortedCards(filtered, sortBy)
+	return paginate(sorted, pageSize, pageToken)
 }
 
 func (svc *Service) ListSets(ctx context.Context) ([]string, error) {
@@ -375,7 +386,31 @@ func decodeCursor(token string) (string, error) {
 	}
 	return string(b), nil
 }
-
+func buildSortedCards(cards []store.Card, sortBy SortBy) []store.Card {
+	slices.SortFunc(cards, func(c1, c2 store.Card) int {
+		switch sortBy {
+		case NAME_DESC:
+			return cmp.Compare(c2.Name, c1.Name)
+		case PRICE_ASC:
+			if p1, p2 := price(c1), price(c2); p1 != p2 {
+				return cmp.Compare(p1, p2)
+			}
+			return cmp.Compare(keyOf(c1), keyOf(c2))
+		case PRICE_DESC:
+			if p1, p2 := price(c1), price(c2); p1 != p2 {
+				return cmp.Compare(p2, p1)
+			}
+			return cmp.Compare(keyOf(c2), keyOf(c1))
+		default:
+			return cmp.Compare(c1.Name, c2.Name)
+		}
+	})
+	return cards
+}
+func price(c store.Card) float64 {
+	p, _ := strconv.ParseFloat(CheckPrice(c.Finish, c.Prices), 64)
+	return p
+}
 func buildFilteredCards(cards []store.Card, filter store.SearchFilter) []store.Card {
 	filtered := make([]store.Card, 0, len(cards))
 	for _, card := range cards {

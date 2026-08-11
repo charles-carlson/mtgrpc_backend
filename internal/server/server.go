@@ -12,6 +12,22 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+func toSortBy(s pb.SortBy) cards.SortBy {
+	switch s {
+	case pb.SortBy_SORT_UNSPECIFIED:
+		return cards.SORT_UNSPECIFIED
+	case pb.SortBy_NAME_ASC:
+		return cards.NAME_ASC
+	case pb.SortBy_NAME_DESC:
+		return cards.NAME_DESC
+	case pb.SortBy_PRICE_ASC:
+		return cards.PRICE_ASC
+	case pb.SortBy_PRICE_DESC:
+		return cards.PRICE_DESC
+	default:
+		return cards.NAME_ASC
+	}
+}
 func toProtoCard(c store.Card) *pb.Card {
 	return &pb.Card{
 		Name:     c.Name,
@@ -94,7 +110,7 @@ func toProtoStatInfo(stats cards.CollectionStats) *pb.GetStatInfoResponse {
 
 type cardService interface {
 	GetCard(ctx context.Context, name, set, number string) (*store.Card, error)
-	SearchCards(ctx context.Context, name string, sets []string, colors []string, rarity []string, pageSize int32, pageToken string) ([]store.Card, string, error)
+	SearchCards(ctx context.Context, name string, sets []string, colors []string, rarity []string, pageSize int32, pageToken string, sortBy cards.SortBy) ([]store.Card, string, error)
 	ListCards(ctx context.Context, pageSize int32, pageToken string) ([]store.Card, string, error)
 	ListSets(ctx context.Context) ([]string, error)
 	GetSetInfo(ctx context.Context) ([]cards.SetCompletion, error)
@@ -137,7 +153,7 @@ func (s *Server) GetCard(ctx context.Context, req *pb.GetCardRequest) (*pb.GetCa
 }
 
 func (s *Server) SearchCards(ctx context.Context, req *pb.SearchCardsRequest) (*pb.SearchCardsResponse, error) {
-	results, nextToken, err := s.cards.SearchCards(ctx, req.Name, req.Set, req.Colors, req.Rarity, req.PageSize, req.PageToken)
+	results, nextToken, err := s.cards.SearchCards(ctx, req.Name, req.Set, req.Colors, req.Rarity, req.PageSize, req.PageToken, toSortBy(req.SortBy))
 	if err != nil {
 		log.Printf("SearchCards(name=%q set=%q colors=%v rarity=%v): %v", req.Name, req.Set, req.Colors, req.Rarity, err)
 		return nil, errQueryCardsInternal

@@ -34,7 +34,7 @@ type stubCardService struct {
 func (s *stubCardService) GetCard(_ context.Context, _, _, _ string) (*store.Card, error) {
 	return s.getCard, s.getErr
 }
-func (s *stubCardService) SearchCards(_ context.Context, _ string, _ []string, _ []string, _ []string, _ int32, _ string) ([]store.Card, string, error) {
+func (s *stubCardService) SearchCards(_ context.Context, _ string, _ []string, _ []string, _ []string, _ int32, _ string, _ cards.SortBy) ([]store.Card, string, error) {
 	return s.searchCards, "", s.searchErr
 }
 func (s *stubCardService) ListCards(_ context.Context, _ int32, _ string) ([]store.Card, string, error) {

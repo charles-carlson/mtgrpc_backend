@@ -12,6 +12,13 @@ service MTGRPC {
     rpc GetSetInfo(GetSetInfoRequest)       returns(GetSetInfoResponse){}
     rpc GetStatInfo(GetStatInfoRequest)     returns(GetStatInfoResponse){}
 }
+enum SortBy {
+    SORT_UNSPECIFIED = 0;
+    NAME_ASC = 1;
+    NAME_DESC = 2;
+    PRICE_ASC = 3;
+    PRICE_DESC = 4;
+}
 message ColorDistribution {
   int32 white = 1;
   int32 blue = 2;
@@ -83,6 +90,7 @@ message SearchCardsRequest {
     int32           page_size  = 4;
     string          page_token = 5;
     repeated string rarity     = 6;
+    SortBy sort_by = 7;
 }
 
 message SearchCardsResponse {

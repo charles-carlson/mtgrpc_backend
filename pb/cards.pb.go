@@ -21,6 +21,61 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type SortBy int32
+
+const (
+	SortBy_SORT_UNSPECIFIED SortBy = 0
+	SortBy_NAME_ASC         SortBy = 1
+	SortBy_NAME_DESC        SortBy = 2
+	SortBy_PRICE_ASC        SortBy = 3
+	SortBy_PRICE_DESC       SortBy = 4
+)
+
+// Enum value maps for SortBy.
+var (
+	SortBy_name = map[int32]string{
+		0: "SORT_UNSPECIFIED",
+		1: "NAME_ASC",
+		2: "NAME_DESC",
+		3: "PRICE_ASC",
+		4: "PRICE_DESC",
+	}
+	SortBy_value = map[string]int32{
+		"SORT_UNSPECIFIED": 0,
+		"NAME_ASC":         1,
+		"NAME_DESC":        2,
+		"PRICE_ASC":        3,
+		"PRICE_DESC":       4,
+	}
+)
+
+func (x SortBy) Enum() *SortBy {
+	p := new(SortBy)
+	*p = x
+	return p
+}
+
+func (x SortBy) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (SortBy) Descriptor() protoreflect.EnumDescriptor {
+	return file_proto_cards_proto_enumTypes[0].Descriptor()
+}
+
+func (SortBy) Type() protoreflect.EnumType {
+	return &file_proto_cards_proto_enumTypes[0]
+}
+
+func (x SortBy) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use SortBy.Descriptor instead.
+func (SortBy) EnumDescriptor() ([]byte, []int) {
+	return file_proto_cards_proto_rawDescGZIP(), []int{0}
+}
+
 type ColorDistribution struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	White         int32                  `protobuf:"varint,1,opt,name=white,proto3" json:"white,omitempty"`
@@ -689,6 +744,7 @@ type SearchCardsRequest struct {
 	PageSize      int32                  `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
 	PageToken     string                 `protobuf:"bytes,5,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
 	Rarity        []string               `protobuf:"bytes,6,rep,name=rarity,proto3" json:"rarity,omitempty"`
+	SortBy        SortBy                 `protobuf:"varint,7,opt,name=sort_by,json=sortBy,proto3,enum=cards.SortBy" json:"sort_by,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -763,6 +819,13 @@ func (x *SearchCardsRequest) GetRarity() []string {
 		return x.Rarity
 	}
 	return nil
+}
+
+func (x *SearchCardsRequest) GetSortBy() SortBy {
+	if x != nil {
+		return x.SortBy
+	}
+	return SortBy_SORT_UNSPECIFIED
 }
 
 type SearchCardsResponse struct {
@@ -1177,7 +1240,7 @@ const file_proto_cards_proto_rawDesc = "" +
 	"\x03set\x18\x02 \x01(\tR\x03set\x12\x16\n" +
 	"\x06number\x18\x03 \x01(\tR\x06number\"2\n" +
 	"\x0fGetCardResponse\x12\x1f\n" +
-	"\x04card\x18\x01 \x01(\v2\v.cards.CardR\x04card\"\xa6\x01\n" +
+	"\x04card\x18\x01 \x01(\v2\v.cards.CardR\x04card\"\xce\x01\n" +
 	"\x12SearchCardsRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x10\n" +
 	"\x03set\x18\x02 \x03(\tR\x03set\x12\x16\n" +
@@ -1185,7 +1248,8 @@ const file_proto_cards_proto_rawDesc = "" +
 	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\x12\x1d\n" +
 	"\n" +
 	"page_token\x18\x05 \x01(\tR\tpageToken\x12\x16\n" +
-	"\x06rarity\x18\x06 \x03(\tR\x06rarity\"`\n" +
+	"\x06rarity\x18\x06 \x03(\tR\x06rarity\x12&\n" +
+	"\asort_by\x18\a \x01(\x0e2\r.cards.SortByR\x06sortBy\"`\n" +
 	"\x13SearchCardsResponse\x12!\n" +
 	"\x05cards\x18\x01 \x03(\v2\v.cards.CardR\x05cards\x12&\n" +
 	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"N\n" +
@@ -1214,7 +1278,14 @@ const file_proto_cards_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\x1aZ\n" +
 	"\x10SubtypeDistEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x120\n" +
-	"\x05value\x18\x02 \x01(\v2\x1a.cards.SubTypeDistributionR\x05value:\x028\x012\x9a\x03\n" +
+	"\x05value\x18\x02 \x01(\v2\x1a.cards.SubTypeDistributionR\x05value:\x028\x01*Z\n" +
+	"\x06SortBy\x12\x14\n" +
+	"\x10SORT_UNSPECIFIED\x10\x00\x12\f\n" +
+	"\bNAME_ASC\x10\x01\x12\r\n" +
+	"\tNAME_DESC\x10\x02\x12\r\n" +
+	"\tPRICE_ASC\x10\x03\x12\x0e\n" +
+	"\n" +
+	"PRICE_DESC\x10\x042\x9a\x03\n" +
 	"\x06MTGRPC\x12:\n" +
 	"\aGetCard\x12\x15.cards.GetCardRequest\x1a\x16.cards.GetCardResponse\"\x00\x12F\n" +
 	"\vSearchCards\x12\x19.cards.SearchCardsRequest\x1a\x1a.cards.SearchCardsResponse\"\x00\x12@\n" +
@@ -1236,60 +1307,63 @@ func file_proto_cards_proto_rawDescGZIP() []byte {
 	return file_proto_cards_proto_rawDescData
 }
 
+var file_proto_cards_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_proto_cards_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_proto_cards_proto_goTypes = []any{
-	(*ColorDistribution)(nil),   // 0: cards.ColorDistribution
-	(*RarityDistribution)(nil),  // 1: cards.RarityDistribution
-	(*SubTypeDistribution)(nil), // 2: cards.SubTypeDistribution
-	(*Prices)(nil),              // 3: cards.Prices
-	(*Card)(nil),                // 4: cards.Card
-	(*SetCompletion)(nil),       // 5: cards.SetCompletion
-	(*GetSetInfoRequest)(nil),   // 6: cards.GetSetInfoRequest
-	(*GetSetInfoResponse)(nil),  // 7: cards.GetSetInfoResponse
-	(*GetCardRequest)(nil),      // 8: cards.GetCardRequest
-	(*GetCardResponse)(nil),     // 9: cards.GetCardResponse
-	(*SearchCardsRequest)(nil),  // 10: cards.SearchCardsRequest
-	(*SearchCardsResponse)(nil), // 11: cards.SearchCardsResponse
-	(*ListCardsRequest)(nil),    // 12: cards.ListCardsRequest
-	(*ListCardsResponse)(nil),   // 13: cards.ListCardsResponse
-	(*ListSetsRequest)(nil),     // 14: cards.ListSetsRequest
-	(*ListSetsResponse)(nil),    // 15: cards.ListSetsResponse
-	(*GetStatInfoRequest)(nil),  // 16: cards.GetStatInfoRequest
-	(*GetStatInfoResponse)(nil), // 17: cards.GetStatInfoResponse
-	nil,                         // 18: cards.SubTypeDistribution.CountsEntry
-	nil,                         // 19: cards.GetStatInfoResponse.TypeDistEntry
-	nil,                         // 20: cards.GetStatInfoResponse.SubtypeDistEntry
+	(SortBy)(0),                 // 0: cards.SortBy
+	(*ColorDistribution)(nil),   // 1: cards.ColorDistribution
+	(*RarityDistribution)(nil),  // 2: cards.RarityDistribution
+	(*SubTypeDistribution)(nil), // 3: cards.SubTypeDistribution
+	(*Prices)(nil),              // 4: cards.Prices
+	(*Card)(nil),                // 5: cards.Card
+	(*SetCompletion)(nil),       // 6: cards.SetCompletion
+	(*GetSetInfoRequest)(nil),   // 7: cards.GetSetInfoRequest
+	(*GetSetInfoResponse)(nil),  // 8: cards.GetSetInfoResponse
+	(*GetCardRequest)(nil),      // 9: cards.GetCardRequest
+	(*GetCardResponse)(nil),     // 10: cards.GetCardResponse
+	(*SearchCardsRequest)(nil),  // 11: cards.SearchCardsRequest
+	(*SearchCardsResponse)(nil), // 12: cards.SearchCardsResponse
+	(*ListCardsRequest)(nil),    // 13: cards.ListCardsRequest
+	(*ListCardsResponse)(nil),   // 14: cards.ListCardsResponse
+	(*ListSetsRequest)(nil),     // 15: cards.ListSetsRequest
+	(*ListSetsResponse)(nil),    // 16: cards.ListSetsResponse
+	(*GetStatInfoRequest)(nil),  // 17: cards.GetStatInfoRequest
+	(*GetStatInfoResponse)(nil), // 18: cards.GetStatInfoResponse
+	nil,                         // 19: cards.SubTypeDistribution.CountsEntry
+	nil,                         // 20: cards.GetStatInfoResponse.TypeDistEntry
+	nil,                         // 21: cards.GetStatInfoResponse.SubtypeDistEntry
 }
 var file_proto_cards_proto_depIdxs = []int32{
-	18, // 0: cards.SubTypeDistribution.counts:type_name -> cards.SubTypeDistribution.CountsEntry
-	3,  // 1: cards.Card.prices:type_name -> cards.Prices
-	5,  // 2: cards.GetSetInfoResponse.sets:type_name -> cards.SetCompletion
-	4,  // 3: cards.GetCardResponse.card:type_name -> cards.Card
-	4,  // 4: cards.SearchCardsResponse.cards:type_name -> cards.Card
-	4,  // 5: cards.ListCardsResponse.cards:type_name -> cards.Card
-	4,  // 6: cards.GetStatInfoResponse.top_k_cards:type_name -> cards.Card
-	1,  // 7: cards.GetStatInfoResponse.rarity_dist:type_name -> cards.RarityDistribution
-	0,  // 8: cards.GetStatInfoResponse.color_dist:type_name -> cards.ColorDistribution
-	19, // 9: cards.GetStatInfoResponse.type_dist:type_name -> cards.GetStatInfoResponse.TypeDistEntry
-	20, // 10: cards.GetStatInfoResponse.subtype_dist:type_name -> cards.GetStatInfoResponse.SubtypeDistEntry
-	2,  // 11: cards.GetStatInfoResponse.SubtypeDistEntry.value:type_name -> cards.SubTypeDistribution
-	8,  // 12: cards.MTGRPC.GetCard:input_type -> cards.GetCardRequest
-	10, // 13: cards.MTGRPC.SearchCards:input_type -> cards.SearchCardsRequest
-	12, // 14: cards.MTGRPC.ListCards:input_type -> cards.ListCardsRequest
-	14, // 15: cards.MTGRPC.ListSets:input_type -> cards.ListSetsRequest
-	6,  // 16: cards.MTGRPC.GetSetInfo:input_type -> cards.GetSetInfoRequest
-	16, // 17: cards.MTGRPC.GetStatInfo:input_type -> cards.GetStatInfoRequest
-	9,  // 18: cards.MTGRPC.GetCard:output_type -> cards.GetCardResponse
-	11, // 19: cards.MTGRPC.SearchCards:output_type -> cards.SearchCardsResponse
-	13, // 20: cards.MTGRPC.ListCards:output_type -> cards.ListCardsResponse
-	15, // 21: cards.MTGRPC.ListSets:output_type -> cards.ListSetsResponse
-	7,  // 22: cards.MTGRPC.GetSetInfo:output_type -> cards.GetSetInfoResponse
-	17, // 23: cards.MTGRPC.GetStatInfo:output_type -> cards.GetStatInfoResponse
-	18, // [18:24] is the sub-list for method output_type
-	12, // [12:18] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	19, // 0: cards.SubTypeDistribution.counts:type_name -> cards.SubTypeDistribution.CountsEntry
+	4,  // 1: cards.Card.prices:type_name -> cards.Prices
+	6,  // 2: cards.GetSetInfoResponse.sets:type_name -> cards.SetCompletion
+	5,  // 3: cards.GetCardResponse.card:type_name -> cards.Card
+	0,  // 4: cards.SearchCardsRequest.sort_by:type_name -> cards.SortBy
+	5,  // 5: cards.SearchCardsResponse.cards:type_name -> cards.Card
+	5,  // 6: cards.ListCardsResponse.cards:type_name -> cards.Card
+	5,  // 7: cards.GetStatInfoResponse.top_k_cards:type_name -> cards.Card
+	2,  // 8: cards.GetStatInfoResponse.rarity_dist:type_name -> cards.RarityDistribution
+	1,  // 9: cards.GetStatInfoResponse.color_dist:type_name -> cards.ColorDistribution
+	20, // 10: cards.GetStatInfoResponse.type_dist:type_name -> cards.GetStatInfoResponse.TypeDistEntry
+	21, // 11: cards.GetStatInfoResponse.subtype_dist:type_name -> cards.GetStatInfoResponse.SubtypeDistEntry
+	3,  // 12: cards.GetStatInfoResponse.SubtypeDistEntry.value:type_name -> cards.SubTypeDistribution
+	9,  // 13: cards.MTGRPC.GetCard:input_type -> cards.GetCardRequest
+	11, // 14: cards.MTGRPC.SearchCards:input_type -> cards.SearchCardsRequest
+	13, // 15: cards.MTGRPC.ListCards:input_type -> cards.ListCardsRequest
+	15, // 16: cards.MTGRPC.ListSets:input_type -> cards.ListSetsRequest
+	7,  // 17: cards.MTGRPC.GetSetInfo:input_type -> cards.GetSetInfoRequest
+	17, // 18: cards.MTGRPC.GetStatInfo:input_type -> cards.GetStatInfoRequest
+	10, // 19: cards.MTGRPC.GetCard:output_type -> cards.GetCardResponse
+	12, // 20: cards.MTGRPC.SearchCards:output_type -> cards.SearchCardsResponse
+	14, // 21: cards.MTGRPC.ListCards:output_type -> cards.ListCardsResponse
+	16, // 22: cards.MTGRPC.ListSets:output_type -> cards.ListSetsResponse
+	8,  // 23: cards.MTGRPC.GetSetInfo:output_type -> cards.GetSetInfoResponse
+	18, // 24: cards.MTGRPC.GetStatInfo:output_type -> cards.GetStatInfoResponse
+	19, // [19:25] is the sub-list for method output_type
+	13, // [13:19] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_proto_cards_proto_init() }
@@ -1302,13 +1376,14 @@ func file_proto_cards_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_cards_proto_rawDesc), len(file_proto_cards_proto_rawDesc)),
-			NumEnums:      0,
+			NumEnums:      1,
 			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_proto_cards_proto_goTypes,
 		DependencyIndexes: file_proto_cards_proto_depIdxs,
+		EnumInfos:         file_proto_cards_proto_enumTypes,
 		MessageInfos:      file_proto_cards_proto_msgTypes,
 	}.Build()
 	File_proto_cards_proto = out.File
