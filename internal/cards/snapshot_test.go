@@ -60,7 +60,7 @@ func TestBuildSnapshot(t *testing.T) {
 				t.Errorf("byKey has %d entries, want %d (key collision?)", len(snap.byKey), len(tc.input))
 			}
 			for _, card := range tc.input {
-				expectedKey := fmt.Sprintf("%s-%s-%s", card.Name, card.Set, card.Number)
+				expectedKey := fmt.Sprintf("%s-%s-%s-%s", card.Name, card.Set, card.Number, card.Finish)
 				if _, ok := snap.byKey[expectedKey]; !ok {
 					t.Errorf("expected=%s, does not exist", expectedKey)
 				}

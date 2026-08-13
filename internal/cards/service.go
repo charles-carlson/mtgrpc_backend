@@ -124,7 +124,7 @@ func (svc *Service) GetStatInfo(context.Context) (*CollectionStats, error) {
 		//Retrieve correct price of card based on finish
 		value := CheckPrice(card.Finish, card.Prices)
 		price, _ := strconv.ParseFloat(value, 64) // "" or malformed → 0, don't fail the whole request
-		totalLiquid += price
+		totalLiquid += (price * float64(card.Count))
 		//Rarity Dis
 		switch card.Rarity {
 		case "common":

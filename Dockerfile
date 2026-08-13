@@ -6,6 +6,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
+RUN go test ./...
 RUN CGO_ENABLED=0 GOARCH=arm64 go build -o server .
 
 FROM alpine:3.21
